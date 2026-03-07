@@ -1,0 +1,255 @@
+openapi: 3.0.3
+info:
+  title: Service Localisation API
+  description: Tracking GPS temps réel, historique des positions et gestion des zones de géofencing
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3004/api/localisation
+    description: Développement local
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /positions:
+    post:
+      summary: Enregistrer une position GPS
+      description: Appelé par le simulateur ou un device embarqué. Publie sur fleet.localisation.position via Kafka.
+      tags: [Positions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePositionDto' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Position' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /positions/{vehicule_id}/derniere:
+    get:
+      summary: Dernière position connue d'un véhicule
+      tags: [Positions]
+      parameters:
+        - name: vehicule_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Position' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /positions/{vehicule_id}/historique:
+    get:
+      summary: Historique des positions sur une période (TimescaleDB)
+      tags: [Positions]
+      parameters:
+        - name: vehicule_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: depuis
+          in: query
+          required: true
+          schema: { type: string, format: date-time, example: "2026-03-07T00:00:00Z" }
+        - name: jusqu_a
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 500, maximum: 5000 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vehicule_id: { type: string, format: uuid }
+                  depuis:      { type: string, format: date-time }
+                  jusqu_a:     { type: string, format: date-time }
+                  total:       { type: integer }
+                  positions:
+                    type: array
+                    items: { $ref: '#/components/schemas/Position' }
+
+  /positions/flotte/snapshot:
+    get:
+      summary: Dernière position de tous les véhicules actifs
+      description: Utilisé pour afficher la carte globale de la flotte
+      tags: [Positions]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PositionVehicule' }
+
+  /positions/{vehicule_id}/vitesse-moyenne:
+    get:
+      summary: Vitesse moyenne d'un véhicule sur une période
+      tags: [Statistiques]
+      parameters:
+        - name: vehicule_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: depuis
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+        - name: jusqu_a
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vehicule_id:     { type: string, format: uuid }
+                  vitesse_moyenne: { type: number }
+                  vitesse_max:     { type: number }
+                  depuis:          { type: string, format: date-time }
+                  jusqu_a:         { type: string, format: date-time }
+
+  /zones:
+    get:
+      summary: Liste toutes les zones de géofencing
+      tags: [Géofencing]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Zone' }
+
+    post:
+      summary: Créer une zone de géofencing
+      tags: [Géofencing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateZoneDto' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Zone' }
+
+  /zones/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+
+    get:
+      summary: Récupérer une zone
+      tags: [Géofencing]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Zone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    put:
+      summary: Modifier une zone de géofencing
+      tags: [Géofencing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateZoneDto' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Zone' }
+
+    delete:
+      summary: Supprimer une zone de géofencing
+      tags: [Géofencing]
+      responses:
+        '204': { description: Zone supprimée }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Position:
+      type: object
+      properties:
+        id_position:  { type: string, format: uuid }
+        vehicule_id:  { type: string, format: uuid }
+        latitude:     { type: number, format: double, example: 49.4431 }
+        longitude:    { type: number, format: double, example: 1.0993 }
+        vitesse:      { type: number, nullable: true, example: 52.3 }
+        horodatage:   { type: string, format: date-time }
+
+    PositionVehicule:
+      description: Position enrichie avec les infos du véhicule
+      type: object
+      properties:
+        vehicule_id:     { type: string, format: uuid }
+        immatriculation: { type: string, example: "AB-123-CD" }
+        latitude:        { type: number, format: double }
+        longitude:       { type: number, format: double }
+        vitesse:         { type: number, nullable: true }
+        horodatage:      { type: string, format: date-time }
+
+    CreatePositionDto:
+      type: object
+      required: [vehicule_id, latitude, longitude]
+      properties:
+        vehicule_id: { type: string, format: uuid }
+        latitude:    { type: number, minimum: -90,  maximum: 90 }
+        longitude:   { type: number, minimum: -180, maximum: 180 }
+        vitesse:     { type: number, minimum: 0, description: "Vitesse en km/h" }
+
+    Zone:
+      type: object
+      properties:
+        id_zone:          { type: string, format: uuid }
+        nom:              { type: string, example: "Zone Rouen Centre" }
+        type:             { type: string, enum: [autorisee, interdite] }
+        latitude_centre:  { type: number }
+        longitude_centre: { type: number }
+        rayon_metres:     { type: number, example: 5000 }
+        actif:            { type: boolean }
+        created_at:       { type: string, format: date-time }
+
+    CreateZoneDto:
+      type: object
+      required: [nom, type, latitude_centre, longitude_centre, rayon_metres]
+      properties:
+        nom:              { type: string }
+        type:             { type: string, enum: [autorisee, interdite] }
+        latitude_centre:  { type: number }
+        longitude_centre: { type: number }
+        rayon_metres:     { type: number, minimum: 100 }
+
+  responses:
+    Unauthorized:
+      description: Token JWT manquant ou invalide
+    BadRequest:
+      description: Données invalides
+    NotFound:
+      description: Ressource introuvable
