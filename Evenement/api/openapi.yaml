@@ -9,7 +9,7 @@ servers:
     description: Développement local
 
 security:
-  - bearerAuth: []
+  - oauth2Keycloak: [utilisateur]
 
 paths:
 
@@ -140,6 +140,19 @@ paths:
 
 components:
   securitySchemes:
+    oauth2Keycloak:
+      type: oauth2
+      description: OAuth2 Authorization Code via Keycloak realm fleet-management
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          refreshUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          scopes:
+            admin: Acces administrateur complet
+            manager: Gestion operationnelle de la flotte
+            technicien: Gestion des interventions de maintenance
+            utilisateur: Consultation et operations standard
     bearerAuth:
       type: http
       scheme: bearer

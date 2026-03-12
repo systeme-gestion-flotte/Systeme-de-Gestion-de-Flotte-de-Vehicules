@@ -9,6 +9,9 @@
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "bruteForceProtected": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
 
   "roles": {
     "realm": [
@@ -31,13 +34,48 @@
     ]
   },
 
+  "clientScopes": [
+    {
+      "name": "fleet.read",
+      "description": "Read-only access to Fleet APIs",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Read access to fleet APIs"
+      }
+    },
+    {
+      "name": "fleet.write",
+      "description": "Write access to Fleet APIs",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Write access to fleet APIs"
+      }
+    },
+    {
+      "name": "fleet.admin",
+      "description": "Administrative access to Fleet APIs",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Admin access to fleet APIs"
+      }
+    }
+  ],
+
   "clients": [
     {
       "clientId": "fleet-frontend",
       "name": "Application Web Flotte",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": true,
       "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "redirectUris": [
         "http://localhost:5173/*",
@@ -47,56 +85,90 @@
         "http://localhost:5173",
         "http://localhost:3000"
       ],
-      "defaultClientScopes": ["openid", "profile", "email", "roles"]
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": ["openid", "profile", "email", "roles", "fleet.read"],
+      "optionalClientScopes": ["fleet.write", "fleet.admin"]
     },
     {
       "clientId": "fleet-api-gateway",
       "name": "API Gateway GraphQL",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": false,
-      "bearerOnly": true,
+      "bearerOnly": false,
       "standardFlowEnabled": false,
-      "serviceAccountsEnabled": true
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "change-me-gateway-secret",
+      "defaultClientScopes": ["roles", "fleet.read", "fleet.write"],
+      "optionalClientScopes": ["fleet.admin"]
     },
     {
       "clientId": "vehicle-service",
       "name": "Service Véhicules",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": false,
-      "bearerOnly": true,
-      "serviceAccountsEnabled": true
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "change-me-vehicle-secret",
+      "defaultClientScopes": ["roles", "fleet.read", "fleet.write"]
     },
     {
       "clientId": "driver-service",
       "name": "Service Conducteurs",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": false,
-      "bearerOnly": true,
-      "serviceAccountsEnabled": true
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "change-me-driver-secret",
+      "defaultClientScopes": ["roles", "fleet.read", "fleet.write"]
     },
     {
       "clientId": "maintenance-service",
       "name": "Service Maintenance",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": false,
-      "bearerOnly": true,
-      "serviceAccountsEnabled": true
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "change-me-maintenance-secret",
+      "defaultClientScopes": ["roles", "fleet.read", "fleet.write"]
     },
     {
       "clientId": "location-service",
       "name": "Service Localisation",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": false,
-      "bearerOnly": true,
-      "serviceAccountsEnabled": true
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "change-me-location-secret",
+      "defaultClientScopes": ["roles", "fleet.read", "fleet.write"]
     },
     {
       "clientId": "event-service",
       "name": "Service Événements",
       "enabled": true,
+      "protocol": "openid-connect",
       "publicClient": false,
-      "bearerOnly": true,
-      "serviceAccountsEnabled": true
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "change-me-event-secret",
+      "defaultClientScopes": ["roles", "fleet.read", "fleet.write"]
     }
   ],
 

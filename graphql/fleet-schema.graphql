@@ -1,0 +1,296 @@
+"""
+GraphQL contract for Fleet Management platform (API Gateway / supergraph view).
+This schema is technology-agnostic and can be implemented with Apollo Federation,
+GraphQL Java, NestJS GraphQL, or Strawberry/FastAPI.
+"""
+
+scalar Date
+scalar DateTime
+scalar UUID
+
+enum StatutVehicule {
+  DISPONIBLE
+  EN_COURSE
+  EN_MAINTENANCE
+}
+
+enum StatutAssignation {
+  EN_COURS
+  TERMINEE
+  ANNULEE
+}
+
+enum TypeIntervention {
+  REVISION
+  REPARATION
+  CONTROLE_TECHNIQUE
+}
+
+enum StatutIntervention {
+  PLANIFIEE
+  EN_COURS
+  TERMINEE
+}
+
+enum TypeAlerte {
+  SORTIE_ZONE
+  EXCES_VITESSE
+  PANNE
+  MAINTENANCE_DUE
+}
+
+enum SeveriteAlerte {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum TypeZone {
+  AUTORISEE
+  INTERDITE
+}
+
+type Vehicule {
+  id_vehicule: UUID!
+  immatriculation: String!
+  marque: String!
+  modele: String!
+  annee: Int!
+  statut: StatutVehicule!
+  kilometrage: Int!
+  created_at: DateTime!
+}
+
+type Conducteur {
+  id_conducteur: UUID!
+  keycloak_user_id: String!
+  nom: String!
+  prenom: String!
+  email: String!
+  numero_permis: String!
+  date_validite_permis: Date!
+  actif: Boolean!
+  created_at: DateTime!
+}
+
+type Assignation {
+  id_assignation: UUID!
+  vehicule_id: UUID!
+  conducteur_id: UUID!
+  date_depart: DateTime!
+  date_retour: DateTime
+  statut: StatutAssignation!
+  created_at: DateTime!
+}
+
+type Intervention {
+  id_intervention: UUID!
+  vehicule_id: UUID!
+  vehicule_immat: String!
+  technicien_id: String!
+  type: TypeIntervention!
+  date_planifiee: DateTime!
+  date_realisation: DateTime
+  statut: StatutIntervention!
+  cout: Float
+  description: String
+  created_at: DateTime!
+}
+
+type Position {
+  id_position: UUID!
+  vehicule_id: UUID!
+  latitude: Float!
+  longitude: Float!
+  vitesse: Float
+  horodatage: DateTime!
+}
+
+type Zone {
+  id_zone: UUID!
+  nom: String!
+  type: TypeZone!
+  latitude_centre: Float!
+  longitude_centre: Float!
+  rayon_metres: Float!
+  actif: Boolean!
+  created_at: DateTime!
+}
+
+type Evenement {
+  id_evenement: UUID!
+  vehicule_id: UUID!
+  source_service: String!
+  type_alerte: TypeAlerte!
+  severite: SeveriteAlerte!
+  description: String!
+  acquitte: Boolean!
+  horodatage: DateTime!
+}
+
+type StatsEvenements {
+  total: Int!
+  non_acquittes: Int!
+  sortie_zone: Int!
+  exces_vitesse: Int!
+  panne: Int!
+  maintenance_due: Int!
+  info: Int!
+  warning: Int!
+  critical: Int!
+}
+
+input VehiculeFilterInput {
+  statut: StatutVehicule
+  marque: String
+  page: Int = 1
+  limit: Int = 20
+}
+
+input CreateVehiculeInput {
+  immatriculation: String!
+  marque: String!
+  modele: String!
+  annee: Int!
+  kilometrage: Int = 0
+}
+
+input UpdateVehiculeInput {
+  marque: String
+  modele: String
+  annee: Int
+  kilometrage: Int
+}
+
+input CreateConducteurInput {
+  keycloak_user_id: String!
+  nom: String!
+  prenom: String!
+  email: String!
+  numero_permis: String!
+  date_validite_permis: Date!
+}
+
+input UpdateConducteurInput {
+  email: String
+  date_validite_permis: Date
+  actif: Boolean
+}
+
+input CreateAssignationInput {
+  vehicule_id: UUID!
+  conducteur_id: UUID!
+  date_depart: DateTime!
+}
+
+input CreateInterventionInput {
+  vehicule_id: UUID!
+  vehicule_immat: String!
+  technicien_id: String!
+  type: TypeIntervention!
+  date_planifiee: DateTime!
+  description: String
+}
+
+input UpdateInterventionInput {
+  date_planifiee: DateTime
+  technicien_id: String
+  description: String
+}
+
+input CreatePositionInput {
+  vehicule_id: UUID!
+  latitude: Float!
+  longitude: Float!
+  vitesse: Float
+}
+
+input CreateZoneInput {
+  nom: String!
+  type: TypeZone!
+  latitude_centre: Float!
+  longitude_centre: Float!
+  rayon_metres: Float!
+}
+
+type Query {
+  vehicules(filter: VehiculeFilterInput): [Vehicule!]!
+  vehicule(id: UUID!): Vehicule
+  vehiculesDisponibles: [Vehicule!]!
+
+  conducteurs(actif: Boolean, page: Int = 1, limit: Int = 20): [Conducteur!]!
+  conducteur(id: UUID!): Conducteur
+  assignations(statut: StatutAssignation, vehicule_id: UUID): [Assignation!]!
+
+  interventions(
+    statut: StatutIntervention,
+    type: TypeIntervention,
+    vehicule_id: UUID,
+    technicien_id: String,
+    page: Int = 1,
+    limit: Int = 20
+  ): [Intervention!]!
+  intervention(id: UUID!): Intervention
+
+  dernierePosition(vehicule_id: UUID!): Position
+  historiquePositions(
+    vehicule_id: UUID!,
+    depuis: DateTime!,
+    jusqu_a: DateTime,
+    limit: Int = 500
+  ): [Position!]!
+  zones: [Zone!]!
+  zone(id: UUID!): Zone
+
+  evenements(
+    vehicule_id: UUID,
+    type_alerte: TypeAlerte,
+    severite: SeveriteAlerte,
+    acquitte: Boolean,
+    depuis: DateTime,
+    page: Int = 1,
+    limit: Int = 20
+  ): [Evenement!]!
+  evenement(id: UUID!): Evenement
+  evenementsCritiques: [Evenement!]!
+  statsEvenements(depuis: DateTime!): StatsEvenements!
+}
+
+type Mutation {
+  createVehicule(input: CreateVehiculeInput!): Vehicule!
+  updateVehicule(id: UUID!, input: UpdateVehiculeInput!): Vehicule!
+  deleteVehicule(id: UUID!): Boolean!
+  updateVehiculeStatut(id: UUID!, statut: StatutVehicule!): Vehicule!
+  updateVehiculeKilometrage(id: UUID!, kilometrage: Int!): Vehicule!
+
+  createConducteur(input: CreateConducteurInput!): Conducteur!
+  updateConducteur(id: UUID!, input: UpdateConducteurInput!): Conducteur!
+  deactivateConducteur(id: UUID!): Boolean!
+
+  createAssignation(input: CreateAssignationInput!): Assignation!
+  terminerAssignation(id: UUID!, date_retour: DateTime!): Assignation!
+  annulerAssignation(id: UUID!): Assignation!
+
+  createIntervention(input: CreateInterventionInput!): Intervention!
+  updateIntervention(id: UUID!, input: UpdateInterventionInput!): Intervention!
+  demarrerIntervention(id: UUID!): Intervention!
+  terminerIntervention(
+    id: UUID!,
+    date_realisation: DateTime!,
+    cout: Float,
+    description: String
+  ): Intervention!
+
+  createPosition(input: CreatePositionInput!): Position!
+  createZone(input: CreateZoneInput!): Zone!
+  updateZone(id: UUID!, input: CreateZoneInput!): Zone!
+  deleteZone(id: UUID!): Boolean!
+
+  acquitterEvenement(id: UUID!): Evenement!
+}
+
+type Subscription {
+  positionUpdated(vehicule_id: UUID): Position!
+  eventRaised(vehicule_id: UUID, severite: SeveriteAlerte): Evenement!
+  interventionStatusChanged(vehicule_id: UUID): Intervention!
+}
