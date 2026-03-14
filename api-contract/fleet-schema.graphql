@@ -1,9 +1,3 @@
-"""
-GraphQL contract for Fleet Management platform (API Gateway / supergraph view).
-This schema is technology-agnostic and can be implemented with Apollo Federation,
-GraphQL Java, NestJS GraphQL, or Strawberry/FastAPI.
-"""
-
 scalar Date
 scalar DateTime
 scalar UUID
