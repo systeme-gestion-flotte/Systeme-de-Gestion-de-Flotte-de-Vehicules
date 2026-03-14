@@ -10,6 +10,13 @@ CREATE TYPE statut_assignation AS ENUM (
     'annulee'
 );
 
+CREATE TYPE categorie_permis AS ENUM (
+     'A', 
+     'B', 
+     'C', 
+     'D'
+);
+
 CREATE TABLE conducteur (
     id_conducteur        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     keycloak_user_id     VARCHAR(255)  NOT NULL UNIQUE,  -- lien Keycloak, pas de table Utilisateur
@@ -17,6 +24,7 @@ CREATE TABLE conducteur (
     prenom               VARCHAR(100)  NOT NULL,
     email                VARCHAR(255)  NOT NULL UNIQUE,
     numero_permis        VARCHAR(50)   NOT NULL UNIQUE,
+    categorie            categorie_permis[] NOT NULL,
     date_validite_permis DATE          NOT NULL,
     actif                BOOLEAN       NOT NULL DEFAULT TRUE,
     created_at           TIMESTAMPTZ   NOT NULL DEFAULT NOW()
