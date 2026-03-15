@@ -15,12 +15,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # On monte tout ton dossier config dans le conteneur sous le nom /app-config
       - ./config:/app-config
-      # On dit à Postgres d'exécuter UNIQUEMENT notre script .sh au démarrage
-      - ./config/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.shnetworks:
+      - ./config/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+    networks:
       - fleet-network
-
+      
   timescaledb:
     image: timescale/timescaledb:latest-pg15
     container_name: fleet-timescaledb

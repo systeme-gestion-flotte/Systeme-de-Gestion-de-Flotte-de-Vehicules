@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicule-service
+  namespace: fleet-management
+spec:
+  replicas: 2 # On demande 2 instances pour la haute disponibilité
+  selector:
+    matchLabels:
+      app: vehicule-service
+  template:
+    metadata:
+      labels:
+        app: vehicule-service
+    spec:
+      containers:
+        - name: vehicule-service
+          # Attention: sur un vrai cluster, cette image doit être sur un registre (Docker Hub, etc.)
+          image: ton-nom-utilisateur/fleet-vehicule-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/vehicules_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "admin"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "adminpassword"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+          # Kubernetes vérifie si ton app est en bonne santé (ADR-009) [cite: 682]
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
