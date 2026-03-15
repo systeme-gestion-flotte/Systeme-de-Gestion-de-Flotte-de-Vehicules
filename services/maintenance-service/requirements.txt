@@ -1,0 +1,7 @@
+fastapi==0.104.1
+uvicorn==0.24.0.post1
+pydantic==2.4.2
+confluent-kafka==2.3.0
+# Pour la connexion à PostgreSQL :
+psycopg2-binary==2.9.9 
+# Ou asyncpg==0.28.0 si tu utilises un ORM asynchrone comme SQLAlchemy 2.0

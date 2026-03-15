@@ -1,0 +1,193 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # --- 1. INFRASTRUCTURE & BASES DE DONNÉES ---
+  # ==========================================
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: fleet-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # On monte tout ton dossier config dans le conteneur sous le nom /app-config
+      - ./config:/app-config
+      # On dit à Postgres d'exécuter UNIQUEMENT notre script .sh au démarrage
+      - ./config/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.shnetworks:
+      - fleet-network
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: fleet-timescaledb
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: localisation_db
+    # Port 5433 sur ta machine pour éviter le conflit avec Postgres
+    ports:
+      - "5433:5432" 
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    networks:
+      - fleet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fleet-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fleet-network
+
+  kafka:
+    image: bitnami/kafka:3.4
+    container_name: fleet-kafka
+    environment:
+      KAFKA_ENABLE_KRAFT: 'yes'
+      KAFKA_CFG_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CFG_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CFG_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_CFG_BROKER_ID: 1
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - fleet-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    container_name: fleet-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: adminpassword
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Keycloak/realm-fleet.json:/opt/keycloak/data/import/realm-fleet.json
+    depends_on:
+      - postgres
+    networks:
+      - fleet-network
+
+  # ==========================================
+  # --- 2. MICROSERVICES MÉTIERS ---
+  # ==========================================
+
+  vehicule-service:
+    build:
+      context: ./services/vehicule-service
+      dockerfile: Dockerfile
+    container_name: fleet-vehicule-service
+    # Accessible sur localhost:8081
+    ports:
+      - "8081:8080" 
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/vehicules_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=adminpassword
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - fleet-network
+
+  conducteur-service:
+    build:
+      context: ./services/conducteur-service
+      dockerfile: Dockerfile
+    container_name: fleet-conducteur-service
+    # Accessible sur localhost:3001
+    ports:
+      - "3001:3000" 
+    environment:
+      - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/conducteurs_db
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - fleet-network
+
+  maintenance-service:
+    build:
+      context: ./services/maintenance-service
+      dockerfile: Dockerfile
+    container_name: fleet-maintenance-service
+    # Accessible sur localhost:8002
+    ports:
+      - "8002:8000" 
+    environment:
+      - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/maintenance_db
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - fleet-network
+
+  evenement-service:
+    build:
+      context: ./services/evenement-service
+      dockerfile: Dockerfile
+    container_name: fleet-evenement-service
+    # Accessible sur localhost:8003
+    ports:
+      - "8003:8000" 
+    environment:
+      - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/evenements_db
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - fleet-network
+
+  localisation-service:
+    build:
+      context: ./localisation-service
+      dockerfile: Dockerfile
+    container_name: fleet-localisation-service
+    # Port gRPC exposé pour l'API Gateway
+    ports:
+      - "50051:50051" 
+    environment:
+      - DATABASE_URL=postgresql://admin:adminpassword@timescaledb:5432/localisation_db
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      - timescaledb
+      - kafka
+    networks:
+      - fleet-network
+
+# ==========================================
+# --- 3. VOLUMES ET RÉSEAUX ---
+# ==========================================
+volumes:
+  postgres_data:
+  timescale_data:
+  redis_data:
+  kafka_data:
+
+networks:
+  fleet-network:
+    driver: bridge

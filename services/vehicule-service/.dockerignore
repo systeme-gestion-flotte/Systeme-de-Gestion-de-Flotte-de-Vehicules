@@ -1,0 +1,12 @@
+# Ignorer le dossier cible généré localement par Maven/IDE
+target/
+*.jar
+
+# Ignorer les fichiers de configuration de l'IDE
+.idea/
+*.iml
+.vscode/
+
+# Ignorer Git
+.git/
+.gitignore
