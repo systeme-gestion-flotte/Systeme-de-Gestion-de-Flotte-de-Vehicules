@@ -78,7 +78,7 @@ services:
       KC_DB_PASSWORD: adminpassword
     command: start-dev --import-realm
     ports:
-      - "8080:8080"
+      - "9080:8080"
     volumes:
       - ./Keycloak/realm-fleet.json:/opt/keycloak/data/import/realm-fleet.json
     depends_on:

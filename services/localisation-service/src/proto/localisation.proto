@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+// Le nom du package (utilisé dans le code TypeScript)
+package localisation;
+
+// Définition du service gRPC
+service LocalisationService {
+  // Un flux bidirectionnel (stream) pour envoyer les positions en continu
+  rpc StreamPositions (stream Position) returns (stream Ack) {}
+}
+
+// Le format des coordonnées GPS envoyées par les véhicules
+message Position {
+  string vehicule_id = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double vitesse = 4;
+  string horodatage = 5;
+}
+
+// L'accusé de réception renvoyé par le serveur
+message Ack {
+  bool success = 1;
+  string message = 2;
+}

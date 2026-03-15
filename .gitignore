@@ -1,0 +1,17 @@
+# Dépendances Node.js
+node_modules/
+
+# Dépendances Python
+__pycache__/
+*.pyc
+venv/
+
+# Dépendances Java
+target/
+*.jar
+
+# Fichiers de variables d'environnement
+.env
+
+# Dossiers compilés
+dist/
