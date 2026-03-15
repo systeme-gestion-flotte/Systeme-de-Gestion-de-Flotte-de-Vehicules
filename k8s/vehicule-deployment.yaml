@@ -16,8 +16,8 @@ spec:
       containers:
         - name: vehicule-service
           # Attention: sur un vrai cluster, cette image doit être sur un registre (Docker Hub, etc.)
-          image: ton-nom-utilisateur/fleet-vehicule-service:latest
-          imagePullPolicy: IfNotPresent
+          image: fleet-vehicule-service:latest
+          imagePullPolicy: Never   
           ports:
             - containerPort: 8080
           env:

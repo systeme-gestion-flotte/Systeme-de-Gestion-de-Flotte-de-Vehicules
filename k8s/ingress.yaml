@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fleet-ingress
+  namespace: fleet-management
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.fleet.local
+      http:
+        paths:
+          # Toutes les requêtes passent par l'API Gateway qui route en interne
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 3000
+          # Routes directes pour debug / dev (à désactiver en production)
+          - path: /vehicules
+            pathType: Prefix
+            backend:
+              service:
+                name: vehicule-service
+                port:
+                  number: 8080
+          - path: /conducteurs
+            pathType: Prefix
+            backend:
+              service:
+                name: conducteur-service
+                port:
+                  number: 8081
+          - path: /maintenance
+            pathType: Prefix
+            backend:
+              service:
+                name: maintenance-service
+                port:
+                  number: 8082
+          - path: /localisation
+            pathType: Prefix
+            backend:
+              service:
+                name: localisation-service
+                port:
+                  number: 8083
+          - path: /evenements
+            pathType: Prefix
+            backend:
+              service:
+                name: evenement-service
+                port:
+                  number: 8084

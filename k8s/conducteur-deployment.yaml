@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conducteur-service
+  namespace: fleet-management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: conducteur-service
+  template:
+    metadata:
+      labels:
+        app: conducteur-service
+    spec:
+      containers:
+        - name: conducteur-service
+          image: fleet-conducteur-service:latest
+          imagePullPolicy: Never   
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/conducteurs_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "admin"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "adminpassword"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: KEYCLOAK_AUTH_SERVER_URL
+              value: "http://keycloak-service:8080/auth"
+            - name: KEYCLOAK_REALM
+              value: "fleet-management"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
