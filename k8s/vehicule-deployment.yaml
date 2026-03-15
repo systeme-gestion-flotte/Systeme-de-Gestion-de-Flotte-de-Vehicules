@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: vehicule-service
-          # Attention: sur un vrai cluster, cette image doit être sur un registre (Docker Hub, etc.)
+          # Attention: sur un vrai cluster, cette image doit être sur un registre 
           image: fleet-vehicule-service:latest
           imagePullPolicy: Never   
           ports:
@@ -29,7 +29,7 @@ spec:
               value: "adminpassword"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
-          # Kubernetes vérifie si ton app est en bonne santé (ADR-009) [cite: 682]
+          # Kubernetes vérifie si ton app est en bonne santé 
           livenessProbe:
             httpGet:
               path: /actuator/health
