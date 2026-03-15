@@ -8,6 +8,6 @@ spec:
     app: maintenance-service
   ports:
     - protocol: TCP
-      port: 8082
-      targetPort: 8082
+      port: 8000
+      targetPort: 8000
   type: ClusterIP

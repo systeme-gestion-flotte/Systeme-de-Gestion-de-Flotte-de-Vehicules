@@ -16,34 +16,21 @@ spec:
       containers:
         - name: maintenance-service
           image: fleet-maintenance-service:latest
-          imagePullPolicy: Never   
+          imagePullPolicy: Never
           ports:
-            - containerPort: 8082
+            - containerPort: 8000
           env:
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://postgres-service:5432/maintenance_db"
-            - name: SPRING_DATASOURCE_USERNAME
-              value: "admin"
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: "adminpassword"
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: "kafka-service:9092"
-            - name: KEYCLOAK_AUTH_SERVER_URL
-              value: "http://keycloak-service:8080/auth"
-            - name: KEYCLOAK_REALM
-              value: "fleet-management"
+            - name: DATABASE_URL
+              value: "postgresql://admin:adminpassword@postgres-postgresql:5432/maintenance_db"
+            - name: KAFKA_BROKER
+              value: "fleet-kafka-kafka-bootstrap:9092"
           livenessProbe:
             httpGet:
-              path: /actuator/health
-              port: 8082
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8082
-            initialDelaySeconds: 20
-            periodSeconds: 5
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 5
           resources:
             limits:
               cpu: "500m"

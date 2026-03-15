@@ -5,9 +5,9 @@ metadata:
   namespace: fleet-management
 spec:
   selector:
-    app: vehicule-service # Ce service redirige le trafic vers les pods ayant ce label
+    app: vehicule-service
   ports:
     - protocol: TCP
-      port: 8080        # Le port exposé par le service
-      targetPort: 8080  # Le port sur lequel le conteneur écoute
-  type: ClusterIP       # Accessible uniquement à l'intérieur du cluster
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

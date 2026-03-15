@@ -16,42 +16,24 @@ spec:
       containers:
         - name: localisation-service
           image: fleet-localisation-service:latest
-          imagePullPolicy: Never   
+          imagePullPolicy: Never
           ports:
-            - containerPort: 8083  # Port REST / GraphQL
-              name: http
-            - containerPort: 50051  # Port gRPC pour le streaming GPS temps réel
+            - containerPort: 50051
               name: grpc
           env:
-            - name: TIMESCALEDB_URL
-              value: "jdbc:postgresql://timescaledb-service:5432/localisation_db"
-            - name: TIMESCALEDB_USERNAME
-              value: "admin"
-            - name: TIMESCALEDB_PASSWORD
-              value: "adminpassword"
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: "kafka-service:9092"
-            - name: KEYCLOAK_AUTH_SERVER_URL
-              value: "http://keycloak-service:8080/auth"
-            - name: KEYCLOAK_REALM
-              value: "fleet-management"
-            # Topic Kafka pour les alertes géofencing
+            - name: DATABASE_URL
+              value: "postgresql://admin:adminpassword@timescaledb-postgresql:5432/localisation_db"
+            - name: KAFKA_BROKER
+              value: "fleet-kafka-kafka-bootstrap:9092"
             - name: KAFKA_TOPIC_GEOFENCING
               value: "fleet.geofencing.alerts"
           livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8083
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8083
-            initialDelaySeconds: 20
-            periodSeconds: 5
+            tcpSocket:
+              port: 50051
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 5
           resources:
-            # Plus de ressources car traitement de données GPS en continu
             limits:
               cpu: "1000m"
               memory: "1Gi"

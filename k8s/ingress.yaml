@@ -11,15 +11,6 @@ spec:
     - host: api.fleet.local
       http:
         paths:
-          # Toutes les requêtes passent par l'API Gateway qui route en interne
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: api-gateway-service
-                port:
-                  number: 3000
-          # Routes directes pour debug / dev (à désactiver en production)
           - path: /vehicules
             pathType: Prefix
             backend:
@@ -33,25 +24,25 @@ spec:
               service:
                 name: conducteur-service
                 port:
-                  number: 8081
+                  number: 3000
           - path: /maintenance
             pathType: Prefix
             backend:
               service:
                 name: maintenance-service
                 port:
-                  number: 8082
-          - path: /localisation
-            pathType: Prefix
-            backend:
-              service:
-                name: localisation-service
-                port:
-                  number: 8083
+                  number: 8000
           - path: /evenements
             pathType: Prefix
             backend:
               service:
                 name: evenement-service
                 port:
-                  number: 8084
+                  number: 8000
+          - path: /localisation
+            pathType: Prefix
+            backend:
+              service:
+                name: localisation-service
+                port:
+                  number: 50051
