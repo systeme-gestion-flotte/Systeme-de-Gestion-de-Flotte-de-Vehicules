@@ -85,7 +85,7 @@ HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   "http://localhost:${KEYCLOAK_PORT}/realms/fleet-management")
 
 if [ "$HTTP_STATUS" = "200" ]; then
-  log_info "✅ Realm 'fleet-management' importé avec succès !"
+  log_info " Realm 'fleet-management' importé avec succès !"
 else
   log_error "Le realm 'fleet-management' n'a pas été trouvé (HTTP $HTTP_STATUS)."
   log_error "Consultez les logs : docker logs ${CONTAINER_NAME}"
@@ -110,6 +110,6 @@ echo "    manager-fleet    / Manager1234!"
 echo "    technicien-fleet / Tech1234!"
 echo "    conducteur-fleet / User1234!"
 echo ""
-echo "  ⚠️  IMPORTANT : Remplacez les secrets 'change-me-*' avant"
+echo "    IMPORTANT : Remplacez les secrets 'change-me-*' avant"
 echo "     tout déploiement en environnement réel !"
 echo "============================================================"
