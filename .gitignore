@@ -16,5 +16,3 @@ target/
 # Dossiers compilés
 dist/
 
-# Fichiers de configuration sensibles
-k8s/secrets.yaml
