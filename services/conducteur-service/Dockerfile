@@ -30,7 +30,7 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
 
 # Installation UNIQUEMENT des dépendances de production (image plus légère)
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copie du code compilé (le dossier 'dist') depuis l'étape de build
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
