@@ -36,7 +36,7 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Installer kubectl        # ← indentation corrigée (6 espaces)
+      - name: Installer kubectl        
         run: |
           curl -LO "https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl"
           chmod +x kubectl
