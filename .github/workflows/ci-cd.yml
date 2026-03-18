@@ -45,7 +45,6 @@ jobs:
       - name: Valider les manifests YAML
         run: |
           kubectl apply --dry-run=client -f k8s/namespace.yaml
-          # secrets.yaml supprimé du repo → retiré ici aussi
           kubectl apply --dry-run=client -f k8s/vehicule-deployment.yaml
           kubectl apply --dry-run=client -f k8s/vehicule-service.yaml
           kubectl apply --dry-run=client -f k8s/conducteur-deployment.yaml
