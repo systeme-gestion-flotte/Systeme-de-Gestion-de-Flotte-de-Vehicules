@@ -7,11 +7,9 @@ on:
     branches: [ main ]
 
 jobs:
-  # Build des images Docker
   build:
     name: Build Docker Images
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
@@ -31,25 +29,23 @@ jobs:
       - name: Build localisation-service (gRPC)
         run: docker build -t fleet-localisation-service:latest ./services/localisation-service
 
-  # Validation des manifests Kubernetes
   validate-k8s:
     name: Validate Kubernetes Manifests
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-       - name: Installer kubectl
+      - name: Installer kubectl        # ← indentation corrigée (6 espaces)
         run: |
-          curl -LO "https://dl.k8s.io/release/v1.34.0/bin/linux/amd64/kubectl"
+          curl -LO "https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
 
       - name: Valider les manifests YAML
         run: |
           kubectl apply --dry-run=client -f k8s/namespace.yaml
-          kubectl apply --dry-run=client -f k8s/secrets.yaml
+          # secrets.yaml supprimé du repo → retiré ici aussi
           kubectl apply --dry-run=client -f k8s/vehicule-deployment.yaml
           kubectl apply --dry-run=client -f k8s/vehicule-service.yaml
           kubectl apply --dry-run=client -f k8s/conducteur-deployment.yaml
@@ -60,14 +56,13 @@ jobs:
           kubectl apply --dry-run=client -f k8s/evenement-service.yaml
           kubectl apply --dry-run=client -f k8s/localisation-deployment.yaml
           kubectl apply --dry-run=client -f k8s/localisation-service.yaml
+          kubectl apply --dry-run=client -f k8s/kafka.yaml
           kubectl apply --dry-run=client -f k8s/ingress.yaml
 
-  #  Tests basiques
   test:
     name: Tests
     runs-on: ubuntu-latest
     needs: build
-
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
@@ -80,7 +75,7 @@ jobs:
           else
             echo "Pas de pom.xml trouvé - tests ignorés"
           fi
- 
+
       - name: Test conducteur-service (Node.js)
         working-directory: ./services/conducteur-service
         run: |
@@ -90,7 +85,7 @@ jobs:
           else
             echo "Pas de package.json trouvé - tests ignorés"
           fi
- 
+
       - name: Test maintenance-service (Python)
         working-directory: ./services/maintenance-service
         run: |
@@ -100,7 +95,7 @@ jobs:
           else
             echo "Pas de requirements.txt trouvé - tests ignorés"
           fi
- 
+
       - name: Test evenement-service (Python)
         working-directory: ./services/evenement-service
         run: |
