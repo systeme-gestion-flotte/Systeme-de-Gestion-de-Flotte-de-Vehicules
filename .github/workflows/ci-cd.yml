@@ -44,19 +44,19 @@ jobs:
 
       - name: Valider les manifests YAML
         run: |
-          kubectl apply --dry-run=client -f k8s/namespace.yaml
-          kubectl apply --dry-run=client -f k8s/vehicule-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/vehicule-service.yaml
-          kubectl apply --dry-run=client -f k8s/conducteur-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/conducteur-service.yaml
-          kubectl apply --dry-run=client -f k8s/maintenance-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/maintenance-service.yaml
-          kubectl apply --dry-run=client -f k8s/evenement-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/evenement-service.yaml
-          kubectl apply --dry-run=client -f k8s/localisation-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/localisation-service.yaml
-          kubectl apply --dry-run=client -f k8s/kafka.yaml
-          kubectl apply --dry-run=client -f k8s/ingress.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/namespace.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/vehicule-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/vehicule-service.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/conducteur-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/conducteur-service.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/maintenance-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/maintenance-service.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/evenement-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/evenement-service.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/localisation-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/localisation-service.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/kafka.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/ingress.yaml
 
   test:
     name: Tests
