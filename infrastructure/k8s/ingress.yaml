@@ -17,7 +17,7 @@ spec:
               service:
                 name: vehicule-service
                 port:
-                  number: 8080
+                  number: 4000
           - path: /conducteurs
             pathType: Prefix
             backend:

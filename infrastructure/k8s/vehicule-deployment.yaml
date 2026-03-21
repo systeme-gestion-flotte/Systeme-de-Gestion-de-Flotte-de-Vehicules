@@ -18,7 +18,7 @@ spec:
           image: fleet-vehicule-service:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 8080
+            - containerPort: 4000
           env:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgres-postgresql:5432/vehicules_db"
@@ -31,7 +31,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8080
+              port: 4000
             initialDelaySeconds: 60
             periodSeconds: 20
             failureThreshold: 5
