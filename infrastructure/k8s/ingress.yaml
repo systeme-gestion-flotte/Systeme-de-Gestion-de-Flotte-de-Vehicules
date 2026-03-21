@@ -4,9 +4,9 @@ metadata:
   name: fleet-ingress
   namespace: fleet-management
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
     - host: api.fleet.local
       http:
