@@ -4,7 +4,7 @@ metadata:
   name: fleet-ingress
   namespace: fleet-management
   annotations:
-    traefik.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/router.middlewares: web
 spec:
   ingressClassName: traefik
   rules:
