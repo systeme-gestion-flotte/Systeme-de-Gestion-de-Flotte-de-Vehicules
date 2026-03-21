@@ -22,6 +22,7 @@ docker build -t fleet-localisation-service:latest ./services/localisation-servic
 ```powershell
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add strimzi https://strimzi.io/charts/
+helm repo add traefik https://helm.traefik.io/traefik
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -36,6 +37,9 @@ kubectl apply -f k8s/secrets.yaml
 
 ### 5. Infrastructure Helm
 ```powershell
+# Traefik (ingress controller)
+helm install traefik traefik/traefik --namespace fleet-management
+
 # Bases de données PostgreSQL (une par service)
 helm install postgres bitnami/postgresql --namespace fleet-management --set auth.username=admin --set auth.password=adminpassword --set auth.database=vehicules_db
 helm install postgres-conducteur bitnami/postgresql --namespace fleet-management --set auth.username=admin --set auth.password=adminpassword --set auth.database=conducteurs_db
@@ -87,10 +91,16 @@ kubectl get all -n fleet-management
 helm list -n fleet-management
 ```
 
+### 10. Accès Traefik Dashboard (optionnel)
+```powershell
+kubectl port-forward $(kubectl get pods --selector "app.kubernetes.io/name=traefik" -n fleet-management --output=name) 9000:9000 -n fleet-management
+# Dashboard accessible sur http://localhost:9000/dashboard/
+```
+
 ---
 
 ## Supprimer le déploiement
 ```powershell
 kubectl delete namespace fleet-management
-helm uninstall postgres postgres-conducteur postgres-maintenance postgres-evenement timescaledb redis strimzi-operator obs loki otel-collector -n fleet-management
+helm uninstall traefik postgres postgres-conducteur postgres-maintenance postgres-evenement timescaledb redis strimzi-operator obs loki otel-collector -n fleet-management
 ```
