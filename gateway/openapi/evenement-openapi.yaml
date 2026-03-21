@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: Service Événements API
+  description: Gestion des alertes, notifications et agrégation des événements métier
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3005/api/evenements
+    description: Développement local
+
+security:
+  - oauth2Keycloak: [utilisateur]
+
+paths:
+
+  /evenements:
+    get:
+      summary: Liste tous les événements
+      tags: [Événements]
+      parameters:
+        - name: vehicule_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: type_alerte
+          in: query
+          schema: { $ref: '#/components/schemas/TypeAlerte' }
+        - name: severite
+          in: query
+          schema: { $ref: '#/components/schemas/SeveriteAlerte' }
+        - name: acquitte
+          in: query
+          description: false = uniquement les alertes actives non traitées
+          schema: { type: boolean, default: false }
+        - name: depuis
+          in: query
+          schema: { type: string, format: date-time }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Evenement' }
+                  total:         { type: integer }
+                  non_acquittes: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /evenements/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+
+    get:
+      summary: Récupérer un événement par ID
+      tags: [Événements]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Evenement' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /evenements/{id}/acquitter:
+    patch:
+      summary: Acquitter une alerte
+      description: Marque l'événement comme traité par un opérateur
+      tags: [Événements]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Evenement' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Événement déjà acquitté
+
+  /evenements/vehicule/{vehicule_id}:
+    get:
+      summary: Tous les événements d'un véhicule
+      tags: [Événements]
+      parameters:
+        - name: vehicule_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Evenement' }
+
+  /evenements/critiques:
+    get:
+      summary: Uniquement les alertes critiques non acquittées
+      description: Endpoint dédié pour le bandeau d'alertes critiques du dashboard
+      tags: [Événements]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Evenement' }
+
+  /evenements/stats:
+    get:
+      summary: Statistiques des événements pour les dashboards Grafana
+      tags: [Statistiques]
+      parameters:
+        - name: depuis
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatsEvenements' }
+
+components:
+  securitySchemes:
+    oauth2Keycloak:
+      type: oauth2
+      description: OAuth2 Authorization Code via Keycloak realm fleet-management
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          refreshUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          scopes:
+            admin: Acces administrateur complet
+            manager: Gestion operationnelle de la flotte
+            technicien: Gestion des interventions de maintenance
+            utilisateur: Consultation et operations standard
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TypeAlerte:
+      type: string
+      enum: [sortie_zone, exces_vitesse, panne, maintenance_due]
+
+    SeveriteAlerte:
+      type: string
+      enum: [info, warning, critical]
+
+    Evenement:
+      type: object
+      properties:
+        id_evenement:    { type: string, format: uuid }
+        vehicule_id:     { type: string, format: uuid }
+        source_service:  { type: string, example: "localisation" }
+        type_alerte:     { $ref: '#/components/schemas/TypeAlerte' }
+        severite:        { $ref: '#/components/schemas/SeveriteAlerte' }
+        description:     { type: string }
+        acquitte:        { type: boolean }
+        horodatage:      { type: string, format: date-time }
+
+    StatsEvenements:
+      type: object
+      properties:
+        total:         { type: integer }
+        non_acquittes: { type: integer }
+        par_type:
+          type: object
+          properties:
+            sortie_zone:     { type: integer }
+            exces_vitesse:   { type: integer }
+            panne:           { type: integer }
+            maintenance_due: { type: integer }
+        par_severite:
+          type: object
+          properties:
+            info:     { type: integer }
+            warning:  { type: integer }
+            critical: { type: integer }
+
+  responses:
+    Unauthorized:
+      description: Token JWT manquant ou invalide
+    NotFound:
+      description: Ressource introuvable

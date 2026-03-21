@@ -1,0 +1,311 @@
+openapi: 3.0.3
+info:
+  title: Service Conducteurs API
+  description: Profils conducteurs, validation des permis, assignations véhicule
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3002/api/conducteurs
+    description: Développement local
+
+security:
+  - oauth2Keycloak: [utilisateur]
+
+paths:
+
+  /conducteurs:
+    get:
+      summary: Liste tous les conducteurs
+      tags: [Conducteurs]
+      parameters:
+        - name: actif
+          in: query
+          schema: { type: boolean }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Conducteur' }
+                  total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+    post:
+      summary: Créer un conducteur
+      tags: [Conducteurs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateConducteurDto' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conducteur' }
+        '409':
+          description: Numéro de permis ou email déjà existant
+
+  /conducteurs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+
+    get:
+      summary: Récupérer un conducteur
+      tags: [Conducteurs]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conducteur' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    put:
+      summary: Mettre à jour un conducteur
+      tags: [Conducteurs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateConducteurDto' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conducteur' }
+
+    delete:
+      summary: Désactiver un conducteur (soft delete)
+      tags: [Conducteurs]
+      responses:
+        '204': { description: Conducteur désactivé }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /conducteurs/{id}/permis/valider:
+    get:
+      summary: Vérifier la validité du permis d'un conducteur
+      tags: [Conducteurs]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valide:          { type: boolean }
+                  date_expiration: { type: string, format: date }
+                  jours_restants:  { type: integer }
+
+  /conducteurs/{id}/assignations:
+    get:
+      summary: Historique des assignations d'un conducteur
+      tags: [Assignations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: statut
+          in: query
+          schema: { $ref: '#/components/schemas/StatutAssignation' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Assignation' }
+
+  /assignations:
+    get:
+      summary: Liste toutes les assignations
+      tags: [Assignations]
+      parameters:
+        - name: statut
+          in: query
+          schema: { $ref: '#/components/schemas/StatutAssignation' }
+        - name: vehicule_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Assignation' }
+
+    post:
+      summary: Créer une assignation conducteur → véhicule
+      description: Déclenche un événement Kafka fleet.conducteurs.assignation
+      tags: [Assignations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateAssignationDto' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Assignation' }
+        '409':
+          description: Conducteur ou véhicule déjà en cours d'assignation
+
+  /assignations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+
+    get:
+      summary: Récupérer une assignation
+      tags: [Assignations]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Assignation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /assignations/{id}/terminer:
+    patch:
+      summary: Terminer une assignation en cours
+      description: Déclenche un événement Kafka ASSIGNATION_TERMINEE
+      tags: [Assignations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date_retour]
+              properties:
+                date_retour: { type: string, format: date-time }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Assignation' }
+
+  /assignations/{id}/annuler:
+    patch:
+      summary: Annuler une assignation
+      tags: [Assignations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Assignation' }
+
+components:
+  securitySchemes:
+    oauth2Keycloak:
+      type: oauth2
+      description: OAuth2 Authorization Code via Keycloak realm fleet-management
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          refreshUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          scopes:
+            admin: Acces administrateur complet
+            manager: Gestion operationnelle de la flotte
+            technicien: Gestion des interventions de maintenance
+            utilisateur: Consultation et operations standard
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    StatutAssignation:
+      type: string
+      enum: [en_cours, terminee, annulee]
+
+    Conducteur:
+      type: object
+      properties:
+        id_conducteur:        { type: string, format: uuid }
+        keycloak_user_id:     { type: string }
+        nom:                  { type: string }
+        prenom:               { type: string }
+        email:                { type: string, format: email }
+        numero_permis:        { type: string }
+        date_validite_permis: { type: string, format: date }
+        actif:                { type: boolean }
+        created_at:           { type: string, format: date-time }
+
+    CreateConducteurDto:
+      type: object
+      required: [keycloak_user_id, nom, prenom, email, numero_permis, date_validite_permis]
+      properties:
+        keycloak_user_id:     { type: string }
+        nom:                  { type: string }
+        prenom:               { type: string }
+        email:                { type: string, format: email }
+        numero_permis:        { type: string }
+        date_validite_permis: { type: string, format: date }
+
+    UpdateConducteurDto:
+      type: object
+      properties:
+        email:                { type: string, format: email }
+        date_validite_permis: { type: string, format: date }
+        actif:                { type: boolean }
+
+    Assignation:
+      type: object
+      properties:
+        id_assignation: { type: string, format: uuid }
+        vehicule_id:    { type: string, format: uuid }
+        conducteur_id:  { type: string, format: uuid }
+        date_depart:    { type: string, format: date-time }
+        date_retour:    { type: string, format: date-time, nullable: true }
+        statut:         { $ref: '#/components/schemas/StatutAssignation' }
+        created_at:     { type: string, format: date-time }
+
+    CreateAssignationDto:
+      type: object
+      required: [vehicule_id, conducteur_id, date_depart]
+      properties:
+        vehicule_id:   { type: string, format: uuid }
+        conducteur_id: { type: string, format: uuid }
+        date_depart:   { type: string, format: date-time }
+
+  responses:
+    Unauthorized:
+      description: Token JWT manquant ou invalide
+    BadRequest:
+      description: Données invalides
+    NotFound:
+      description: Ressource introuvable
