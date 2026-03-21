@@ -31,8 +31,8 @@ helm repo update
 
 ### 4. Namespace et secrets
 ```powershell
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/secrets.yaml
+kubectl apply -f infrastructure/k8s/namespace.yaml
+kubectl apply -f infrastructure/k8s/secrets.yaml
 ```
 
 ### 5. Infrastructure Helm
@@ -61,7 +61,7 @@ helm install otel-collector open-telemetry/opentelemetry-collector --set mode=de
 
 ### 6. Kafka (attendre 2 min que Strimzi démarre)
 ```powershell
-kubectl apply -f k8s/kafka.yaml
+kubectl apply -f infrastructure/k8s/kafka.yaml
 ```
 
 ### 7. Jaeger
@@ -72,17 +72,17 @@ kubectl expose pod jaeger -n fleet-management --type=NodePort --port=16686
 
 ### 8. Microservices
 ```powershell
-kubectl apply -f k8s/vehicule-deployment.yaml
-kubectl apply -f k8s/vehicule-service.yaml
-kubectl apply -f k8s/conducteur-deployment.yaml
-kubectl apply -f k8s/conducteur-service.yaml
-kubectl apply -f k8s/maintenance-deployment.yaml
-kubectl apply -f k8s/maintenance-service.yaml
-kubectl apply -f k8s/evenement-deployment.yaml
-kubectl apply -f k8s/evenement-service.yaml
-kubectl apply -f k8s/localisation-deployment.yaml
-kubectl apply -f k8s/localisation-service.yaml
-kubectl apply -f k8s/ingress.yaml
+kubectl apply -f infrastructure/k8s/vehicule-deployment.yaml
+kubectl apply -f infrastructure/k8s/vehicule-service.yaml
+kubectl apply -f infrastructure/k8s/conducteur-deployment.yaml
+kubectl apply -f infrastructure/k8s/conducteur-service.yaml
+kubectl apply -f infrastructure/k8s/maintenance-deployment.yaml
+kubectl apply -f infrastructure/k8s/maintenance-service.yaml
+kubectl apply -f infrastructure/k8s/evenement-deployment.yaml
+kubectl apply -f infrastructure/k8s/evenement-service.yaml
+kubectl apply -f infrastructure/k8s/localisation-deployment.yaml
+kubectl apply -f infrastructure/k8s/localisation-service.yaml
+kubectl apply -f infrastructure/k8s/ingress.yaml
 ```
 
 ### 9. Vérifier
