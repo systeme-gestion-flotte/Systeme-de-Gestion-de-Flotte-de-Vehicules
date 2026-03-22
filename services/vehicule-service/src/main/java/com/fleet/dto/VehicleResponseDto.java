@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class VehicleResponseDto {
 
-    private UUID id;
+    private UUID id_vehicule;
     private String marque;
     private String modele;
     private String immatriculation;
@@ -20,8 +20,8 @@ public class VehicleResponseDto {
     public VehicleResponseDto() {}
 
     // Getters et Setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId_vehicule() { return id_vehicule; }
+    public void setId_vehicule(UUID id_vehicule) { this.id_vehicule = id_vehicule; }
 
     public String getMarque() { return marque; }
     public void setMarque(String marque) { this.marque = marque; }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PILIER 3 : LOGS STRUCTURÉS avec corrélation OpenTelemetry
+
+  Ce fichier configure le format des logs pour inclure le traceId et spanId.
+  Grâce à ça, chaque ligne de log contient :
+    - %X{traceId} : l'ID unique de la trace (partagé entre tous les services)
+    - %X{spanId}  : l'ID du span actuel (opération spécifique)
+
+  Exemple de log produit :
+    2026-03-22 14:30:00 INFO  [traceId=abc123, spanId=def456] c.f.s.VehicleServiceImpl - Création d'un véhicule
+
+  Cela permet de :
+    1. Chercher tous les logs d'une requête par traceId
+    2. Cliquer sur le traceId dans Grafana pour ouvrir la trace dans Jaeger
+-->
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [traceId=%X{traceId:-none}, spanId=%X{spanId:-none}] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Niveaux de log par package -->
+    <logger name="com.fleet" level="DEBUG"/>
+    <logger name="org.springframework.kafka" level="INFO"/>
+    <logger name="org.springframework.graphql" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

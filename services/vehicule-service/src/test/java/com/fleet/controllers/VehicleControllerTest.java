@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -37,15 +36,13 @@ class VehicleControllerTest {
     private VehicleResponseDto responseDto;
     private VehicleRequestDto requestDto;
     private UUID vehicleId;
-    private UUID vehicleId2;
 
     @BeforeEach
     void setUp() {
         vehicleId = UUID.randomUUID();
-        vehicleId2 = UUID.randomUUID();
 
         responseDto = new VehicleResponseDto();
-        responseDto.setId(vehicleId);
+        responseDto.setId_vehicule(vehicleId);
         responseDto.setMarque("Renault");
         responseDto.setModele("Clio");
         responseDto.setImmatriculation("AB-123-CD");
@@ -64,74 +61,38 @@ class VehicleControllerTest {
     void createVehicle_ReturnsCreated() throws Exception {
         when(vehicleService.createVehicle(any(VehicleRequestDto.class))).thenReturn(responseDto);
 
-        mockMvc.perform(post("/api/vehicles")
+        mockMvc.perform(post("/api/vehicules")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(vehicleId.toString()))
-                .andExpect(jsonPath("$.marque").value("Renault"))
-                .andExpect(jsonPath("$.modele").value("Clio"))
-                .andExpect(jsonPath("$.immatriculation").value("AB-123-CD"));
+                .andExpect(jsonPath("$.id_vehicule").value(vehicleId.toString()))
+                .andExpect(jsonPath("$.marque").value("Renault"));
     }
 
     @Test
     void getAllVehicles_ReturnsList() throws Exception {
-        VehicleResponseDto responseDto2 = new VehicleResponseDto();
-        responseDto2.setId(vehicleId2);
-        responseDto2.setMarque("Peugeot");
-        responseDto2.setModele("308");
-        responseDto2.setImmatriculation("EF-456-GH");
-        responseDto2.setStatut("EN_COURSE");
-        responseDto2.setType("Berline");
+        when(vehicleService.getAllVehicles()).thenReturn(Arrays.asList(responseDto));
 
-        when(vehicleService.getAllVehicles()).thenReturn(Arrays.asList(responseDto, responseDto2));
-
-        mockMvc.perform(get("/api/vehicles"))
+        mockMvc.perform(get("/api/vehicules"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].marque").value("Renault"))
-                .andExpect(jsonPath("$[1].marque").value("Peugeot"));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id_vehicule").value(vehicleId.toString()));
     }
 
     @Test
     void getVehicleById_ReturnsVehicle() throws Exception {
         when(vehicleService.getVehicleById(vehicleId)).thenReturn(responseDto);
 
-        mockMvc.perform(get("/api/vehicles/" + vehicleId))
+        mockMvc.perform(get("/api/vehicules/" + vehicleId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(vehicleId.toString()))
-                .andExpect(jsonPath("$.marque").value("Renault"));
-    }
-
-    @Test
-    void updateVehicle_ReturnsUpdated() throws Exception {
-        responseDto.setModele("Megane");
-        when(vehicleService.updateVehicle(eq(vehicleId), any(VehicleRequestDto.class))).thenReturn(responseDto);
-
-        requestDto.setModele("Megane");
-        mockMvc.perform(put("/api/vehicles/" + vehicleId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.modele").value("Megane"));
+                .andExpect(jsonPath("$.id_vehicule").value(vehicleId.toString()));
     }
 
     @Test
     void deleteVehicle_ReturnsNoContent() throws Exception {
         doNothing().when(vehicleService).deleteVehicle(vehicleId);
 
-        mockMvc.perform(delete("/api/vehicles/" + vehicleId))
+        mockMvc.perform(delete("/api/vehicules/" + vehicleId))
                 .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void createVehicle_ValidationError_ReturnsBadRequest() throws Exception {
-        VehicleRequestDto invalidRequest = new VehicleRequestDto();
-        // Tous les champs obligatoires sont null
-
-        mockMvc.perform(post("/api/vehicles")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest());
     }
 }

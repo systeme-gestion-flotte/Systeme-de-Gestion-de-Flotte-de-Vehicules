@@ -11,14 +11,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Contrôleur REST aligné avec gateway/openapi/vehicule-openapi.yaml.
+ * Utilise /api/vehicules (Français).
+ */
 @RestController
-@RequestMapping("/api/vehicles")
+@RequestMapping("/api/vehicules")
 public class VehicleController {
 
     private static final Logger log = LoggerFactory.getLogger(VehicleController.class);
-
     private final VehicleService vehicleService;
 
     public VehicleController(VehicleService vehicleService) {
@@ -27,43 +31,60 @@ public class VehicleController {
 
     @PostMapping
     public ResponseEntity<VehicleResponseDto> createVehicle(@Valid @RequestBody VehicleRequestDto request) {
-        log.info("POST /api/vehicles - Création d'un véhicule");
-        VehicleResponseDto response = vehicleService.createVehicle(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        log.info("POST /api/vehicules - Création");
+        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.createVehicle(request));
     }
 
     @GetMapping
     public ResponseEntity<List<VehicleResponseDto>> getAllVehicles() {
-        log.info("GET /api/vehicles - Liste des véhicules");
-        List<VehicleResponseDto> vehicles = vehicleService.getAllVehicles();
-        return ResponseEntity.ok(vehicles);
+        log.info("GET /api/vehicules - Liste complète");
+        return ResponseEntity.ok(vehicleService.getAllVehicles());
+    }
+
+    @GetMapping("/disponibles")
+    public ResponseEntity<List<VehicleResponseDto>> getDisponibles() {
+        log.info("GET /api/vehicules/disponibles - Filtrage disponibles");
+        return ResponseEntity.ok(vehicleService.getDisponibles());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<VehicleResponseDto> getVehicleById(@PathVariable UUID id) {
-        log.info("GET /api/vehicles/{} - Détail d'un véhicule", id);
-        VehicleResponseDto vehicle = vehicleService.getVehicleById(id);
-        return ResponseEntity.ok(vehicle);
+        log.info("GET /api/vehicules/{} - Détail", id);
+        return ResponseEntity.ok(vehicleService.getVehicleById(id));
     }
 
     @GetMapping("/statut/{statut}")
     public ResponseEntity<List<VehicleResponseDto>> getVehiclesByStatut(@PathVariable String statut) {
-        log.info("GET /api/vehicles/statut/{} - Filtrage par statut", statut);
-        List<VehicleResponseDto> vehicles = vehicleService.getVehiclesByStatut(statut);
-        return ResponseEntity.ok(vehicles);
+        log.info("GET /api/vehicules/statut/{} - Filtrage par statut", statut);
+        return ResponseEntity.ok(vehicleService.getVehiclesByStatut(statut));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<VehicleResponseDto> updateVehicle(@PathVariable UUID id,
                                                              @Valid @RequestBody VehicleRequestDto request) {
-        log.info("PUT /api/vehicles/{} - Mise à jour d'un véhicule", id);
-        VehicleResponseDto response = vehicleService.updateVehicle(id, request);
-        return ResponseEntity.ok(response);
+        log.info("PUT /api/vehicules/{} - Mise à jour complète", id);
+        return ResponseEntity.ok(vehicleService.updateVehicle(id, request));
+    }
+
+    @PatchMapping("/{id}/statut")
+    public ResponseEntity<VehicleResponseDto> updateStatut(@PathVariable UUID id,
+                                                           @RequestBody Map<String, String> body) {
+        String statut = body.get("statut");
+        log.info("PATCH /api/vehicules/{}/statut - Nouveau statut: {}", id, statut);
+        return ResponseEntity.ok(vehicleService.updateStatut(id, statut));
+    }
+
+    @PatchMapping("/{id}/kilometrage")
+    public ResponseEntity<VehicleResponseDto> updateKilometrage(@PathVariable UUID id,
+                                                               @RequestBody Map<String, Integer> body) {
+        Integer kilometrage = body.get("kilometrage");
+        log.info("PATCH /api/vehicules/{}/kilometrage - Nouveau kilométrage: {}", id, kilometrage);
+        return ResponseEntity.ok(vehicleService.updateKilometrage(id, kilometrage));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable UUID id) {
-        log.info("DELETE /api/vehicles/{} - Suppression d'un véhicule", id);
+        log.info("DELETE /api/vehicules/{} - Suppression", id);
         vehicleService.deleteVehicle(id);
         return ResponseEntity.noContent().build();
     }

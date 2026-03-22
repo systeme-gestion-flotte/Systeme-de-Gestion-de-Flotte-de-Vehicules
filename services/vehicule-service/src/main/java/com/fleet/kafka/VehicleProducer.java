@@ -29,13 +29,13 @@ public class VehicleProducer {
 
     public void sendVehicleEvent(String eventType, VehicleResponseDto vehicle) {
         try {
-            String key = eventType + "-" + vehicle.getId();
+            String key = eventType + "-" + vehicle.getId_vehicule();
             String payload = objectMapper.writeValueAsString(new VehicleEvent(eventType, vehicle));
 
             kafkaTemplate.send(vehicleEventsTopic, key, payload);
-            log.info("Événement Kafka envoyé: type={}, vehicleId={}", eventType, vehicle.getId());
+            log.info("Événement Kafka envoyé: {} [id={}]", eventType, vehicle.getId_vehicule());
         } catch (JsonProcessingException e) {
-            log.error("Erreur de sérialisation de l'événement Kafka", e);
+            log.error("Erreur lors de la sérialisation de l'événement Kafka", e);
         }
     }
 

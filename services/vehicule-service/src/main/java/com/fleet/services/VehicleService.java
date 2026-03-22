@@ -18,5 +18,11 @@ public interface VehicleService {
 
     VehicleResponseDto updateVehicle(UUID id, VehicleRequestDto request);
 
+    VehicleResponseDto updateStatut(UUID id, String statut);
+
+    VehicleResponseDto updateKilometrage(UUID id, Integer kilometrage);
+
+    List<VehicleResponseDto> getDisponibles();
+
     void deleteVehicle(UUID id);
 }

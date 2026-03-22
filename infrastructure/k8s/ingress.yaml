@@ -1,10 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: fleet-ingress
+  name: fleet-ingress-traefik
   namespace: fleet-management
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: web
+    traefik.ingress.kubernetes.io/router.middlewares: fleet-management-stripprefix@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
@@ -32,17 +32,40 @@ spec:
                 name: maintenance-service
                 port:
                   number: 8000
-          - path: /evenements
-            pathType: Prefix
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fleet-ingress-nginx
+  namespace: fleet-management
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.fleet.local
+      http:
+        paths:
+          - path: /api/vehicules/?(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
-                name: evenement-service
+                name: vehicule-service
+                port:
+                  number: 4000
+          - path: /api/conducteurs/?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: conducteur-service
+                port:
+                  number: 3000
+          - path: /api/maintenance/?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: maintenance-service
                 port:
                   number: 8000
-          - path: /localisation
-            pathType: Prefix
-            backend:
-              service:
-                name: localisation-service
-                port:
-                  number: 50051

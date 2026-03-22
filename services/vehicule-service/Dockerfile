@@ -34,8 +34,8 @@ COPY --from=builder --chown=spring:spring /app/target/*.jar app.jar
 # Bascule sur l'utilisateur sécurisé non-root
 USER spring
 
-# Exposition du port par défaut de Spring Boot
-EXPOSE 8080
+# Exposition du port de l'application
+EXPOSE 4000
 
 # Commande de démarrage de l'application Java
 ENTRYPOINT ["java", "-jar", "app.jar"]

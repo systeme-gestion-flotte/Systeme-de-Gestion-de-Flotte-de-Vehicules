@@ -1,0 +1,1030 @@
+\documentclass[12pt,a4paper]{report}
+
+% ==========================================
+% PACKAGES
+% ==========================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[francais]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+
+\geometry{
+  headheight=15pt,
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+% ==========================================
+% COULEURS GLOBALES
+% ==========================================
+\definecolor{primary}{RGB}{30,56,100}
+\definecolor{secondary}{RGB}{46,117,182}
+\definecolor{codegray}{RGB}{150,150,150}
+\definecolor{accent}{RGB}{255,165,0}
+\definecolor{lightblue}{RGB}{235,245,255}
+\definecolor{successgreen}{RGB}{0,128,0}
+
+% ==========================================
+% COULEURS ET STYLE DES LISTINGS (CODE)
+% ==========================================
+\definecolor{lightgray}{rgb}{0.96,0.96,0.96}
+\definecolor{darkgray}{rgb}{0.3,0.3,0.3}
+\definecolor{codegreen}{RGB}{0,128,0}
+\definecolor{codepurple}{RGB}{128,0,128}
+\definecolor{codeblue}{RGB}{0,0,180}
+
+\lstdefinestyle{shell}{
+  backgroundcolor=\color{lightgray},
+  frame=single,
+  rulecolor=\color{darkgray},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  numbersep=8pt,
+  showstringspaces=false,
+  tabsize=2,
+  aboveskip=1em,
+  belowskip=1em
+}
+
+\lstdefinestyle{javastyle}{
+  backgroundcolor=\color{lightgray},
+  commentstyle=\color{codegreen}\itshape,
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{darkgray},
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  numbersep=8pt,
+  tabsize=4,
+  showstringspaces=false,
+  aboveskip=1em,
+  belowskip=1em,
+  captionpos=b
+}
+
+\lstdefinestyle{sqlstyle}{
+  backgroundcolor=\color{lightgray},
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{darkgray},
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  numbersep=8pt,
+  tabsize=4,
+  showstringspaces=false,
+  language=SQL,
+  aboveskip=1em,
+  belowskip=1em,
+  captionpos=b
+}
+
+\lstdefinestyle{yamlstyle}{
+  backgroundcolor=\color{lightgray},
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{darkgray},
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  numbersep=8pt,
+  tabsize=2,
+  showstringspaces=false,
+  aboveskip=1em,
+  belowskip=1em,
+  captionpos=b
+}
+
+\lstdefinestyle{graphqlstyle}{
+  backgroundcolor=\color{lightgray},
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{darkgray},
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  numbersep=8pt,
+  tabsize=4,
+  showstringspaces=false,
+  aboveskip=1em,
+  belowskip=1em,
+  captionpos=b
+}
+
+% ==========================================
+% STYLE DES TITRES
+% ==========================================
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primary}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{secondary}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{primary}}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+% ==========================================
+% EN-TÊTE ET PIED DE PAGE
+% ==========================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{secondary}Gestion de Flotte de V\'ehiculess}
+\fancyhead[R]{\small\color{secondary}Master 1 GIL --- 2025/2026}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ==========================================
+% BOÎTES ADR ET INFO
+% ==========================================
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{adrbox}[2][]{
+  enhanced,
+  colback=lightblue,
+  colframe=secondary,
+  fonttitle=\bfseries\color{white},
+  title=#2,
+  #1
+}
+
+\newtcolorbox{infobox}{
+  enhanced,
+  colback=yellow!10,
+  colframe=accent,
+  fonttitle=\bfseries,
+}
+
+% ==========================================
+\begin{document}
+
+% ==========================================
+% PAGE DE TITRE
+% ==========================================
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\color{primary}\rule{\linewidth}{1pt}}
+\vspace{0.5cm}
+
+{\Huge\bfseries\color{primary} Rapport Technique\par}
+\vspace{0.4cm}
+{\LARGE\color{secondary} Service de Gestion des V\'ehiculess\par}
+\vspace{0.3cm}
+{\large Microservice Spring Boot --- CRUD, Kafka, GraphQL, Tests et Observabilit\'e\par}
+
+\vspace{0.5cm}
+{\color{primary}\rule{\linewidth}{1pt}}
+
+\vspace{2cm}
+
+{\Large Syst\`eme de Gestion de Flotte de V\'ehiculess\par}
+\vspace{1cm}
+{\large Master 1 GIL --- 2025/2026\par}
+\vspace{0.5cm}
+{\large Mars 2026\par}
+
+\vfill
+\end{titlepage}
+
+% ============================================================
+\chapter{Introduction}
+% ============================================================
+
+Ce rapport d\'ecrit en d\'etail l'impl\'ementation du microservice \textbf{vehicule-service}, un composant central du syst\`eme de gestion de flotte de v\'ehicules. Ce service g\`ere le cycle de vie complet des v\'ehicules : cr\'eation, consultation, mise \`a jour et suppression (CRUD), tout en int\'egrant des technologies modernes pour la communication asynchrone (Kafka), les API flexibles (GraphQL), l'observabilit\'e (OpenTelemetry) et les tests automatis\'es.
+
+\section{Architecture g\'en\'erale}
+
+Le service suit une architecture en couches classique :
+
+\begin{enumerate}
+    \item \textbf{Couche Contr\^oleur} --- Expose les API REST et GraphQL
+    \item \textbf{Couche Service} --- Contient la logique m\'etier
+    \item \textbf{Couche Repository} --- G\`ere la persistance avec Spring Data JPA
+    \item \textbf{Couche \'Ev\'enementielle} --- Publie et consomme des \'ev\'enements via Kafka
+\end{enumerate}
+
+\begin{infobox}
+\textbf{Port du service :} 8081 \\
+\textbf{Base de donn\'ees :} PostgreSQL (fleet\_vehicles) \\
+\textbf{Messagerie :} Apache Kafka (localhost:9092) \\
+\textbf{Tracing :} OpenTelemetry (OTLP sur localhost:4317)
+\end{infobox}
+
+% ============================================================
+\chapter{Interface REST et Alignement OpenAPI}
+% ============================================================
+
+Le service expose une interface REST align\'ee sur la sp\'ecification OpenAPI de la passerelle (\texttt{gateway/openapi/vehicule-openapi.yaml}). Les points d'entr\'ee utilisent le nommage en fran\c{c}ais (\texttt{/api/vehicules}) et le champ identifiant est \texttt{id\_vehicule}.
+
+\section{Points d'entr\'ee (Endpoints)}
+
+\begin{adrbox}{Endpoints REST --- Base path: /api/vehicules}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{M\'ethode} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\texttt{POST} & \texttt{/} & Cr\'eation d'un v\'ehicule \\
+\texttt{GET} & \texttt{/} & Liste de tous les v\'ehicules \\
+\texttt{GET} & \texttt{/disponibles} & Liste uniquement les v\'ehicules disponibles \\
+\texttt{GET} & \texttt{/\{id\}} & D\'etail d'un v\'ehicule par UUID \\
+\texttt{PUT} & \texttt{/\{id\}} & Mise \`a jour compl\`ete \\
+\texttt{PATCH} & \texttt{/\{id\}/statut} & Mise \`a jour du statut (Kafka) \\
+\texttt{PATCH} & \texttt{/\{id\}/kilometrage} & Mise \`a jour du kilom\'etrage \\
+\texttt{DELETE} & \texttt{/\{id\}} & Suppression du v\'ehicule \\
+\bottomrule
+\end{tabularx}
+\end{adrbox}
+
+\section{Structure des donn\'ees (DTO)}
+
+Les r\'eponses utilisent la structure suivante pour garantir la compatibilit\'e avec le schéma SQL et la passerelle :
+
+\begin{lstlisting}[style=jsonstyle, caption={Exemple de r\'eponse VehicleResponseDto}]
+{
+  "id_vehicule": "550e8400-e29b-41d4-a716-446655440000",
+  "immatriculation": "AB-123-CD",
+  "marque": "Renault",
+  "modele": "Clio",
+  "annee": 2022,
+  "statut": "DISPONIBLE",
+  "kilometrage": 45000,
+  "type": "Berline"
+}
+\end{lstlisting}
+
+\section{Ports et Connectivit\'e}
+
+Le microservice est configur\'e pour s'int\'egrer dans un environnement distribu\'e :
+\begin{itemize}
+    \item \textbf{Port Interne (Service)} : \texttt{4000} (configur\'e dans \texttt{application.yml})
+    \item \textbf{Port Externe (Gateway/Ingress)} : \texttt{api.fleet.local} (via Traefik ou Nginx)
+\end{itemize}
+
+\section{D\'eploiement Kubernetes (K8s)}
+
+Le service est d\'eploy\'e avec des sondes de disponibilit\'e (\textit{Liveness Probes}) configur\'ees pour assurer la r\'esilience :
+\begin{itemize}
+    \item \textbf{Sonde Liveness} : Appel sur \texttt{/actuator/health} (Java) ou \texttt{/health} (Python) sur le port du conteneur.
+    \item \textbf{Ingress Dual-Controller} : Le fichier \texttt{ingress.yaml} d\'efinit deux ressources pour supporter \textbf{Traefik} (via \texttt{ingressClassName: traefik}) et \textbf{Nginx} (via \texttt{ingressClassName: nginx}).
+\end{itemize}
+
+\begin{infobox}
+\textbf{Note sur l'acc\`es local (Windows/Minikube) :}
+Pour que l'Ingress soit accessible via le nom d'h\^ote \texttt{api.fleet.local}, il est indispensable de lancer la commande \texttt{minikube tunnel} dans un terminal s\'epar\'e et de mettre \`a jour le fichier \texttt{hosts} de Windows.
+\end{infobox}
+% ============================================================
+\chapter{Biblioth\`eques et d\'ependances}
+% ============================================================
+
+Le projet utilise \textbf{Spring Boot 3.1.5} comme framework principal.
+
+\section{D\'ependances principales}
+
+\begin{adrbox}{D\'ependances de production}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Biblioth\`eque} & \textbf{Artifact} & \textbf{R\^ole} \\
+\midrule
+Spring Boot Web & \texttt{spring-boot-starter-web} & Serveur HTTP embarqu\'e (Tomcat), API REST \\
+Spring Data JPA & \texttt{spring-boot-starter-data-jpa} & ORM Hibernate, mapping entit\'e-table \\
+PostgreSQL Driver & \texttt{postgresql} & Pilote JDBC pour PostgreSQL \\
+Validation & \texttt{spring-boot-starter-validation} & Validation des DTOs (\texttt{@NotBlank}, \texttt{@Min}) \\
+Spring Kafka & \texttt{spring-kafka} & Producteur/consommateur Kafka \\
+Spring GraphQL & \texttt{spring-boot-starter-graphql} & API GraphQL avec sch\'ema SDL \\
+Actuator & \texttt{spring-boot-starter-actuator} & Endpoints de sant\'e et m\'etriques \\
+Micrometer & \texttt{micrometer-registry-prometheus} & Export des m\'etriques vers Prometheus \\
+OpenTelemetry & \texttt{opentelemetry-spring-boot-starter} & Tracing distribu\'e \\
+\bottomrule
+\end{tabularx}
+\end{adrbox}
+
+\section{D\'ependances de test}
+
+\begin{adrbox}{D\'ependances de test}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Biblioth\`eque} & \textbf{Artifact} & \textbf{R\^ole} \\
+\midrule
+Spring Boot Test & \texttt{spring-boot-starter-test} & JUnit 5, Mockito, MockMvc \\
+H2 Database & \texttt{h2} & Base de donn\'ees en m\'emoire pour les tests \\
+Spring Kafka Test & \texttt{spring-kafka-test} & Kafka embarqu\'e pour les tests \\
+Spring GraphQL Test & \texttt{spring-graphql-test} & Outils de test GraphQL \\
+\bottomrule
+\end{tabularx}
+\end{adrbox}
+
+% ============================================================
+\chapter{Mod\`ele de donn\'ees}
+% ============================================================
+
+\section{Sch\'ema SQL (PostgreSQL)}
+
+La table \texttt{vehicule} est d\'efinie avec les contraintes suivantes :
+
+\begin{lstlisting}[style=sqlstyle, caption={Script SQL de cr\'eation de la table vehicule}]
+CREATE TYPE statut_vehicule AS ENUM (
+    'DISPONIBLE', 'EN_COURSE', 'EN_MAINTENANCE'
+);
+
+CREATE TABLE vehicule (
+    id_vehicule     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    immatriculation VARCHAR(20)      NOT NULL UNIQUE,
+    marque          VARCHAR(100)     NOT NULL,
+    modele          VARCHAR(100)     NOT NULL,
+    annee           SMALLINT         NOT NULL
+                    CHECK (annee >= 1900
+                    AND annee <= EXTRACT(YEAR FROM NOW()) + 1),
+    statut          statut_vehicule  NOT NULL DEFAULT 'DISPONIBLE',
+    kilometrage     INTEGER          NOT NULL DEFAULT 0
+                    CHECK (kilometrage >= 0),
+    type            VARCHAR(50)      NOT NULL,
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ
+);
+\end{lstlisting}
+
+\begin{infobox}
+\textbf{Points cl\'es du sch\'ema :}
+\begin{itemize}[nosep]
+    \item \textbf{UUID} comme cl\'e primaire, g\'en\'er\'e via \texttt{gen\_random\_uuid()}
+    \item \textbf{Enum PostgreSQL} pour le statut, garantissant l'int\'egrit\'e
+    \item \textbf{Contraintes CHECK} sur l'ann\'ee et le kilom\'etrage
+    \item \textbf{Unicit\'e} de l'immatriculation
+    \item \textbf{Index} sur statut et immatriculation
+\end{itemize}
+\end{infobox}
+
+\section{Entit\'e JPA}
+
+L'entit\'e Java \texttt{Vehicle} est mapp\'ee sur la table SQL :
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={Extrait de Vehicle.java}]
+@Entity
+@Table(name = "vehicule")
+public class Vehicle {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_vehicule")
+    private UUID id;
+
+    @Column(name = "immatriculation", nullable = false,
+            unique = true, length = 20)
+    private String immatriculation;
+
+    @Column(nullable = false, length = 100)
+    private String marque;
+
+    @Column(nullable = false, length = 100)
+    private String modele;
+
+    @Column(name = "annee", nullable = false)
+    private Short annee;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private VehicleStatus statut = VehicleStatus.DISPONIBLE;
+
+    @Column(nullable = false)
+    private Integer kilometrage = 0;
+
+    public enum VehicleStatus {
+        DISPONIBLE, EN_COURSE, EN_MAINTENANCE
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}
+\end{lstlisting}
+
+\section{Correspondance entit\'e / table}
+
+\begin{adrbox}{Mapping JPA --- PostgreSQL}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Champ Java} & \textbf{Colonne SQL} & \textbf{Type SQL} \\
+\midrule
+\texttt{id} (UUID) & \texttt{id\_vehicule} & \texttt{UUID} \\
+\texttt{immatriculation} & \texttt{immatriculation} & \texttt{VARCHAR(20)} \\
+\texttt{marque} & \texttt{marque} & \texttt{VARCHAR(100)} \\
+\texttt{modele} & \texttt{modele} & \texttt{VARCHAR(100)} \\
+\texttt{annee} (Short) & \texttt{annee} & \texttt{SMALLINT} \\
+\texttt{statut} (Enum) & \texttt{statut} & \texttt{statut\_vehicule} \\
+\texttt{kilometrage} & \texttt{kilometrage} & \texttt{INTEGER} \\
+\texttt{type} & \texttt{type} & \texttt{VARCHAR(50)} \\
+\texttt{createdAt} & \texttt{created\_at} & \texttt{TIMESTAMPTZ} \\
+\texttt{updatedAt} & \texttt{updated\_at} & \texttt{TIMESTAMPTZ} \\
+\bottomrule
+\end{tabular}
+\end{adrbox}
+
+% ============================================================
+\chapter{API REST --- CRUD}
+% ============================================================
+
+Le contr\^oleur REST expose les op\'erations CRUD classiques via \texttt{VehicleController}.
+
+\section{Endpoints disponibles}
+
+\begin{adrbox}{Endpoints REST du service v\'ehicule}
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{M\'ethode} & \textbf{URL} & \textbf{Action} & \textbf{Description} \\
+\midrule
+POST & \texttt{/api/vehicles} & Create & Cr\'eer un nouveau v\'ehicule \\
+GET & \texttt{/api/vehicles} & Read All & Lister tous les v\'ehicules \\
+GET & \texttt{/api/vehicles/\{id\}} & Read One & Obtenir un v\'ehicule par UUID \\
+GET & \texttt{/api/vehicles/statut/\{s\}} & Filter & Filtrer par statut \\
+PUT & \texttt{/api/vehicles/\{id\}} & Update & Mettre \`a jour un v\'ehicule \\
+DELETE & \texttt{/api/vehicles/\{id\}} & Delete & Supprimer un v\'ehicule \\
+\bottomrule
+\end{tabularx}
+\end{adrbox}
+
+\section{Contr\^oleur REST}
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={VehicleController.java}]
+@RestController
+@RequestMapping("/api/vehicles")
+public class VehicleController {
+
+    private final VehicleService vehicleService;
+
+    @PostMapping
+    public ResponseEntity<VehicleResponseDto> createVehicle(
+            @Valid @RequestBody VehicleRequestDto request) {
+        VehicleResponseDto response =
+            vehicleService.createVehicle(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VehicleResponseDto> getVehicleById(
+            @PathVariable UUID id) {
+        VehicleResponseDto vehicle =
+            vehicleService.getVehicleById(id);
+        return ResponseEntity.ok(vehicle);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VehicleResponseDto> updateVehicle(
+            @PathVariable UUID id,
+            @Valid @RequestBody VehicleRequestDto request) {
+        VehicleResponseDto response =
+            vehicleService.updateVehicle(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVehicle(
+            @PathVariable UUID id) {
+        vehicleService.deleteVehicle(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+\end{lstlisting}
+
+\section{DTOs (Data Transfer Objects)}
+
+Le projet utilise deux DTOs pour d\'ecoupler l'API de l'entit\'e interne :
+
+\begin{itemize}
+    \item \textbf{VehicleRequestDto} --- Donn\'ees entrantes avec validation :
+    \begin{itemize}[nosep]
+        \item \texttt{@NotBlank} sur marque, mod\`ele, immatriculation, type
+        \item \texttt{@NotNull} sur l'ann\'ee
+        \item \texttt{@Min(0)} sur le kilom\'etrage
+    \end{itemize}
+    \item \textbf{VehicleResponseDto} --- Donn\'ees sortantes avec ID UUID, timestamps, etc.
+\end{itemize}
+
+\section{Couche Service}
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={Extrait de VehicleServiceImpl.java}]
+@Service
+@Transactional
+public class VehicleServiceImpl implements VehicleService {
+
+    private final VehicleRepository vehicleRepository;
+    private final VehicleProducer vehicleProducer;
+
+    @Override
+    public VehicleResponseDto createVehicle(
+            VehicleRequestDto request) {
+        // Verification d'unicite de l'immatriculation
+        if (vehicleRepository.existsByImmatriculation(
+                request.getImmatriculation())) {
+            throw new IllegalArgumentException(
+                "Immatriculation deja existante");
+        }
+        Vehicle vehicle = mapToEntity(request);
+        Vehicle saved = vehicleRepository.save(vehicle);
+
+        // Publication de l'evenement Kafka
+        vehicleProducer.sendVehicleEvent(
+            "VEHICLE_CREATED", mapToDto(saved));
+        return mapToDto(saved);
+    }
+}
+\end{lstlisting}
+
+\begin{infobox}
+\textbf{Points importants de la couche Service :}
+\begin{itemize}[nosep]
+    \item \texttt{@Transactional} assure l'int\'egrit\'e des op\'erations
+    \item \texttt{@Transactional(readOnly = true)} optimise les lectures
+    \item V\'erifications m\'etier (unicit\'e d'immatriculation)
+    \item Publication automatique d'\'ev\'enements Kafka apr\`es chaque op\'eration
+\end{itemize}
+\end{infobox}
+
+% ============================================================
+\chapter{Apache Kafka --- Communication asynchrone}
+% ============================================================
+
+\section{R\^ole de Kafka dans l'architecture}
+
+Apache Kafka est utilis\'e comme syst\`eme de messagerie asynchrone pour :
+\begin{itemize}
+    \item \textbf{D\'ecoupler} les services --- le producteur n'attend pas de r\'eponse
+    \item \textbf{Publier des \'ev\'enements} sur le cycle de vie des v\'ehicules
+    \item \textbf{Permettre le replay} des \'ev\'enements en cas de besoin
+    \item \textbf{Alimenter d'autres services} (notifications, analytics, etc.)
+\end{itemize}
+
+\section{Producteur Kafka}
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={VehicleProducer.java}]
+@Service
+public class VehicleProducer {
+
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+
+    @Value("${app.kafka.topic.vehicle-events:vehicle-events}")
+    private String vehicleEventsTopic;
+
+    public void sendVehicleEvent(String eventType,
+                                  VehicleResponseDto vehicle) {
+        String key = eventType + "-" + vehicle.getId();
+        String payload = objectMapper.writeValueAsString(
+            new VehicleEvent(eventType, vehicle));
+        kafkaTemplate.send(vehicleEventsTopic, key, payload);
+    }
+
+    // Classe interne -- structure de l'evenement
+    public static class VehicleEvent {
+        private String eventType;
+        private VehicleResponseDto vehicle;
+        private long timestamp;
+    }
+}
+\end{lstlisting}
+
+\begin{adrbox}{Types d'\'ev\'enements Kafka}
+\begin{tabular}{l l}
+\toprule
+\textbf{\'Ev\'enement} & \textbf{D\'eclencheur} \\
+\midrule
+\texttt{VEHICLE\_CREATED} & Cr\'eation d'un v\'ehicule \\
+\texttt{VEHICLE\_UPDATED} & Mise \`a jour d'un v\'ehicule \\
+\texttt{VEHICLE\_DELETED} & Suppression d'un v\'ehicule \\
+\bottomrule
+\end{tabular}
+\end{adrbox}
+
+\section{Consommateur Kafka}
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={VehicleConsumer.java}]
+@Service
+public class VehicleConsumer {
+
+    @KafkaListener(
+        topics = "${app.kafka.topic.vehicle-events}",
+        groupId = "${spring.kafka.consumer.group-id}")
+    public void consumeVehicleEvent(String message) {
+        log.info("Evenement vehicule recu: {}", message);
+        // Traitement : notifications, mises a jour, etc.
+    }
+}
+\end{lstlisting}
+
+\section{Configuration Kafka}
+
+\begin{lstlisting}[style=yamlstyle, caption={Configuration Kafka dans application.yml}]
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization
+                      .StringSerializer
+      value-serializer: org.apache.kafka.common.serialization
+                        .StringSerializer
+    consumer:
+      group-id: vehicule-service-group
+      auto-offset-reset: earliest
+\end{lstlisting}
+
+% ============================================================
+\chapter{GraphQL --- API flexible}
+% ============================================================
+
+\section{Pourquoi GraphQL ?}
+
+GraphQL offre des avantages compl\'ementaires \`a REST :
+\begin{itemize}
+    \item \textbf{Requ\^etes flexibles} --- Le client choisit exactement les champs voulus
+    \item \textbf{Un seul endpoint} --- \texttt{/graphql} remplace plusieurs endpoints REST
+    \item \textbf{Pas de sur-r\'ecup\'eration} --- Contrairement \`a REST qui retourne tous les champs
+    \item \textbf{Introspection} --- Documentation automatique du sch\'ema
+\end{itemize}
+
+\section{Sch\'ema GraphQL}
+
+\begin{lstlisting}[style=graphqlstyle, caption={schema.graphqls}]
+type Vehicle {
+    id: ID!
+    marque: String!
+    modele: String!
+    immatriculation: String!
+    statut: String!
+    kilometrage: Int
+    type: String!
+    annee: Int!
+    createdAt: String
+    updatedAt: String
+}
+
+type Query {
+    allVehicles: [Vehicle!]!
+    vehicleById(id: ID!): Vehicle
+    vehiclesByStatut(statut: String!): [Vehicle!]!
+}
+
+type Mutation {
+    createVehicle(
+        marque: String!, modele: String!,
+        immatriculation: String!, type: String!,
+        statut: String, kilometrage: Int, annee: Int!
+    ): Vehicle!
+    updateVehicle(
+        id: ID!, marque: String!, modele: String!,
+        immatriculation: String!, type: String!,
+        statut: String, kilometrage: Int, annee: Int!
+    ): Vehicle!
+    deleteVehicle(id: ID!): Boolean!
+}
+\end{lstlisting}
+
+\section{Contr\^oleur GraphQL}
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={Extrait de VehicleGraphQLController.java}]
+@Controller
+public class VehicleGraphQLController {
+
+    private final VehicleService vehicleService;
+
+    @QueryMapping
+    public List<VehicleResponseDto> allVehicles() {
+        return vehicleService.getAllVehicles();
+    }
+
+    @QueryMapping
+    public VehicleResponseDto vehicleById(@Argument String id) {
+        return vehicleService.getVehicleById(
+            UUID.fromString(id));
+    }
+
+    @MutationMapping
+    public VehicleResponseDto createVehicle(
+            @Argument String marque,
+            @Argument String modele,
+            @Argument String immatriculation,
+            @Argument String type,
+            @Argument Integer annee) {
+        VehicleRequestDto request = new VehicleRequestDto();
+        request.setMarque(marque);
+        request.setModele(modele);
+        request.setImmatriculation(immatriculation);
+        request.setType(type);
+        request.setAnnee(annee != null
+            ? annee.shortValue() : null);
+        return vehicleService.createVehicle(request);
+    }
+}
+\end{lstlisting}
+
+\section{Exemple de requ\^ete GraphQL}
+
+\begin{lstlisting}[style=graphqlstyle, caption={Requ\^ete pour obtenir marque et mod\`ele}]
+query {
+  allVehicles {
+    marque
+    modele
+    statut
+  }
+}
+\end{lstlisting}
+
+\begin{infobox}
+L'interface \textbf{GraphiQL} est activ\'ee et accessible \`a \texttt{http://localhost:4000/graphiql} pour tester les requ\^etes de mani\`ere interactive.
+\end{infobox}
+
+% ============================================================
+\chapter{Tests automatis\'es}
+% ============================================================
+
+\section{Strat\'egie de test}
+
+Le projet impl\'emente deux niveaux de tests :
+
+\begin{enumerate}
+    \item \textbf{Tests unitaires} --- Couche service avec Mockito
+    \item \textbf{Tests d'int\'egration} --- Couche contr\^oleur avec MockMvc
+\end{enumerate}
+
+\section{Tests unitaires de la couche Service}
+
+Les tests de \texttt{VehicleServiceTest} utilisent \textbf{Mockito} pour isoler la logique m\'etier :
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={Extrait de VehicleServiceTest.java}]
+@ExtendWith(MockitoExtension.class)
+class VehicleServiceTest {
+
+    @Mock
+    private VehicleRepository vehicleRepository;
+    @Mock
+    private VehicleProducer vehicleProducer;
+    @InjectMocks
+    private VehicleServiceImpl vehicleService;
+
+    @Test
+    void createVehicle_Success() {
+        when(vehicleRepository.existsByImmatriculation(
+            "AB-123-CD")).thenReturn(false);
+        when(vehicleRepository.save(any(Vehicle.class)))
+            .thenReturn(vehicle);
+
+        VehicleResponseDto result =
+            vehicleService.createVehicle(requestDto);
+
+        assertNotNull(result);
+        assertEquals("Renault", result.getMarque());
+        verify(vehicleProducer).sendVehicleEvent(
+            eq("VEHICLE_CREATED"),
+            any(VehicleResponseDto.class));
+    }
+
+    @Test
+    void createVehicle_DuplicateImmatriculation() {
+        when(vehicleRepository.existsByImmatriculation(
+            "AB-123-CD")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+            () -> vehicleService.createVehicle(requestDto));
+        verify(vehicleRepository, never())
+            .save(any(Vehicle.class));
+    }
+}
+\end{lstlisting}
+
+\section{Tests d'int\'egration du contr\^oleur REST}
+
+\begin{lstlisting}[style=javastyle, language=Java, caption={Extrait de VehicleControllerTest.java}]
+@WebMvcTest(VehicleController.class)
+class VehicleControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private VehicleService vehicleService;
+
+    @Test
+    void createVehicle_ReturnsCreated() throws Exception {
+        when(vehicleService.createVehicle(
+            any(VehicleRequestDto.class)))
+            .thenReturn(responseDto);
+
+        mockMvc.perform(post("/api/vehicles")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper
+                    .writeValueAsString(requestDto)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.marque").value("Renault"))
+            .andExpect(jsonPath("$.immatriculation")
+                .value("AB-123-CD"));
+    }
+
+    @Test
+    void createVehicle_ValidationError() throws Exception {
+        VehicleRequestDto invalid = new VehicleRequestDto();
+
+        mockMvc.perform(post("/api/vehicles")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper
+                    .writeValueAsString(invalid)))
+            .andExpect(status().isBadRequest());
+    }
+}
+\end{lstlisting}
+
+\section{Cas de test couverts}
+
+\begin{adrbox}{Couverture des tests}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Classe} & \textbf{Test} & \textbf{Sc\'enario} \\
+\midrule
+Service & createVehicle\_Success & Cr\'eation r\'eussie + \'ev\'enement Kafka \\
+Service & createVehicle\_Duplicate & Rejet si immatriculation dupliqu\'ee \\
+Service & getVehicleById\_Success & R\'ecup\'eration par UUID \\
+Service & getVehicleById\_NotFound & Exception si inexistant \\
+Service & getAllVehicles\_Success & Liste compl\`ete \\
+Service & getVehiclesByStatut & Filtrage par statut \\
+Service & updateVehicle\_Success & Mise \`a jour + \'ev\'enement Kafka \\
+Service & updateVehicle\_NotFound & Exception si inexistant \\
+Service & deleteVehicle\_Success & Suppression + \'ev\'enement Kafka \\
+Service & deleteVehicle\_NotFound & Exception si inexistant \\
+\midrule
+Controller & createVehicle\_Created & HTTP 201 + JSON \\
+Controller & getAllVehicles\_List & HTTP 200 + tableau \\
+Controller & getVehicleById & HTTP 200 + d\'etail \\
+Controller & updateVehicle\_Updated & HTTP 200 + modifi\'e \\
+Controller & deleteVehicle\_NoContent & HTTP 204 \\
+Controller & validation\_BadRequest & HTTP 400 si invalide \\
+\bottomrule
+\end{tabularx}
+\end{adrbox}
+
+% ============================================================
+\chapter{Observabilit\'e --- OpenTelemetry SDK}
+% ============================================================
+
+L'impl\'ementation de l'observabilit\'e repose sur les \textbf{3 piliers d'OpenTelemetry} (Traces, M\'etriques, Logs), int\'egr\'es via le SDK Java.
+
+\section{Le SDK et la configuration centralis\'ee}
+
+Une classe \texttt{VehicleTelemetry} centralise l'acc\`es au \textbf{Tracer} (pour les traces) et au \textbf{Meter} (pour les m\'etriques).
+
+\begin{lstlisting}[style=javastyle, caption={Extraits de VehicleTelemetry.java}]
+@Component
+public class VehicleTelemetry {
+    private final Tracer tracer;
+    private final LongCounter vehiclesCreatedCounter;
+    private final LongHistogram operationDurationHistogram;
+
+    public VehicleTelemetry(OpenTelemetry openTelemetry) {
+        this.tracer = openTelemetry.getTracer("vehicule-service");
+        Meter meter = openTelemetry.getMeter("vehicule-service");
+        
+        // Compteur : nombre total de creations
+        this.vehiclesCreatedCounter = meter.counterBuilder("vehicles.created.total").build();
+        
+        // Histogramme : duree des operations
+        this.operationDurationHistogram = meter.histogramBuilder("vehicles.operation.duration").ofLongs().build();
+    }
+}
+\end{lstlisting}
+
+\section{Pilier 1 : Traces Distribu\'ees}
+
+Les traces permettent de suivre une requ\^ete. Nous utilisons deux m\'ethodes :
+\begin{itemize}
+    \item \textbf{Instrumentation d\'eclarative} : Utilisation de \texttt{@WithSpan} pour cr\'eer automatiquement un span sur une m\'ethode.
+    \item \textbf{Attributs personnalis\'es} : Utilisation de \texttt{@SpanAttribute} pour injecter des param\`etres (ex: UUID du v\'ehicule) dans la trace.
+\end{itemize}
+
+\begin{lstlisting}[style=javastyle, caption={Traces dans la couche Service}]
+@WithSpan("createVehicle")
+public VehicleResponseDto createVehicle(VehicleRequestDto request) {
+    Span.current().setAttribute("vehicle.marque", request.getMarque());
+    // ... logique metier ...
+}
+\end{lstlisting}
+
+\section{Pilier 2 : M\'etriques Personnalis\'ees}
+
+Contrairement aux traces, les m\'etriques sont des donn\'ees num\'eriques agr\'eg\'ees. Nous mesurons :
+\begin{itemize}
+    \item Le nombre total de v\'ehicules cr\'e\'es et supprim\'es.
+    \item Le taux d'erreurs par type d'op\'eration.
+    \item La distribution des temps de traitement (latence).
+\end{itemize}
+
+\section{Pilier 3 : Logs Structur\'es et Corr\'elation}
+
+Pour relier les logs aux traces, nous injectons le \texttt{traceId} et le \texttt{spanId} dans le contexte de diagnostic (\textbf{MDC}).
+
+\begin{lstlisting}[style=xmlstyle, caption={Configuration Logback (logback-spring.xml)}]
+<encoder>
+    <pattern>
+        %d %-5level [traceId=%X{traceId:-none}, spanId=%X{spanId:-none}] %logger - %msg%n
+    </pattern>
+</encoder>
+\end{lstlisting}
+
+\section{V\'erification du fonctionnement}
+
+Pour s'assurer que l'observabilit\'e est active :
+
+\begin{adrbox}{Plan de v\'erification}
+\begin{enumerate}
+    \item \textbf{Logs} : Lancer l'application et effectuer un appel API. Le log doit afficher \texttt{traceId=...} avec un ID hexad\'ecimal au lieu de \texttt{none}.
+    \item \textbf{M\'etriques} : Acc\'eder \`a \texttt{/actuator/prometheus}. Rechercher la ligne \texttt{vehicles\_created\_total} pour voir le compteur augmenter.
+    \item \textbf{Traces} : Si un collecteur (Jaeger/Tempo) est configur\'e, les spans \texttt{createVehicle} appara\^\i tront avec leurs attributs (\texttt{vehicle.marque}).
+\end{enumerate}
+\end{adrbox}
+
+
+% ============================================================
+\chapter{Configuration de l'application}
+% ============================================================
+
+\begin{lstlisting}[style=yamlstyle, caption={application.yml -- Configuration compl\`ete}]
+server:
+  port: 4000
+
+spring:
+  application:
+    name: vehicule-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fleet_vehicles
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  graphql:
+    graphiql:
+      enabled: true
+    path: /graphql
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+\end{lstlisting}
+
+\begin{infobox}
+\textbf{Note :} Le mode \texttt{ddl-auto: update} permet \`a Hibernate de mettre \`a jour le sch\'ema automatiquement au d\'emarrage. En production, il est recommand\'e d'utiliser un outil de migration comme \textbf{Flyway} ou \textbf{Liquibase}.
+\end{infobox}
+
+% ============================================================
+\chapter{Conclusion}
+% ============================================================
+
+Le microservice \textbf{vehicule-service} impl\'emente une architecture moderne et compl\`ete :
+
+\begin{itemize}
+    \item \textbf{CRUD REST} structur\'e avec validation, DTOs et gestion d'erreurs
+    \item \textbf{GraphQL} offrant une API flexible compl\'ementaire
+    \item \textbf{Kafka} pour la communication \'ev\'enementielle asynchrone inter-services
+    \item \textbf{Tests automatis\'es} couvrant la logique m\'etier et les endpoints HTTP
+    \item \textbf{Observabilit\'e} via OpenTelemetry, Actuator et Prometheus
+    \item \textbf{Coh\'erence entit\'e/base} avec un mapping JPA align\'e sur le sch\'ema PostgreSQL
+\end{itemize}
+
+Cette architecture permet au service d'\^etre \textit{scalable}, \textit{maintenable} et \textit{observable} dans un contexte de d\'eploiement microservices.
+
+\end{document}

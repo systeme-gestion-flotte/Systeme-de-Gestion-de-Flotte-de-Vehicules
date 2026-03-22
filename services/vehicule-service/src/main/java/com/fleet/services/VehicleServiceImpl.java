@@ -6,8 +6,18 @@ import com.fleet.entity.Vehicle;
 import com.fleet.entity.Vehicle.VehicleStatus;
 import com.fleet.kafka.VehicleProducer;
 import com.fleet.repository.VehicleRepository;
+import com.fleet.telemetry.VehicleTelemetry;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +25,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Implémentation du service véhicule alignée avec la spec OpenAPI.
+ * Utilise id_vehicule au lieu de id pour le DTO.
+ */
 @Service
 @Transactional
 public class VehicleServiceImpl implements VehicleService {
@@ -23,105 +37,196 @@ public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleProducer vehicleProducer;
+    private final VehicleTelemetry telemetry;
 
-    public VehicleServiceImpl(VehicleRepository vehicleRepository, VehicleProducer vehicleProducer) {
+    public VehicleServiceImpl(VehicleRepository vehicleRepository,
+                              VehicleProducer vehicleProducer,
+                              VehicleTelemetry telemetry) {
         this.vehicleRepository = vehicleRepository;
         this.vehicleProducer = vehicleProducer;
+        this.telemetry = telemetry;
     }
 
     @Override
+    @WithSpan("createVehicle")
     public VehicleResponseDto createVehicle(VehicleRequestDto request) {
-        log.info("Création d'un véhicule: {} {}", request.getMarque(), request.getModele());
+        long startTime = System.currentTimeMillis();
+        enrichLogsWithTraceContext();
+        log.info("Création d'un véhicule: {} {} [immat={}]",
+                request.getMarque(), request.getModele(), request.getImmatriculation());
 
-        if (vehicleRepository.existsByImmatriculation(request.getImmatriculation())) {
-            throw new IllegalArgumentException("Un véhicule avec l'immatriculation " + request.getImmatriculation() + " existe déjà");
+        try {
+            Span currentSpan = Span.current();
+            currentSpan.setAttribute("vehicle.marque", request.getMarque());
+            currentSpan.setAttribute("vehicle.immatriculation", request.getImmatriculation());
+
+            if (vehicleRepository.existsByImmatriculation(request.getImmatriculation())) {
+                currentSpan.setStatus(StatusCode.ERROR, "Immatriculation dupliquée");
+                telemetry.getOperationErrorsCounter().add(1,
+                        Attributes.of(AttributeKey.stringKey("operation"), "create",
+                                       AttributeKey.stringKey("error.type"), "duplicate"));
+                throw new IllegalArgumentException("L'immatriculation " + request.getImmatriculation() + " existe déjà");
+            }
+
+            Vehicle vehicle = mapToEntity(request);
+            Vehicle saved = vehicleRepository.save(vehicle);
+
+            currentSpan.setAttribute("vehicle.id", saved.getId().toString());
+            VehicleResponseDto response = mapToDto(saved);
+            vehicleProducer.sendVehicleEvent("VEHICLE_CREATED", response);
+
+            telemetry.getVehiclesCreatedCounter().add(1,
+                    Attributes.of(AttributeKey.stringKey("vehicle.type"), saved.getType()));
+
+            return response;
+        } finally {
+            recordDuration("create", startTime);
         }
-
-        Vehicle vehicle = mapToEntity(request);
-        Vehicle saved = vehicleRepository.save(vehicle);
-
-        // Publier l'événement Kafka
-        vehicleProducer.sendVehicleEvent("VEHICLE_CREATED", mapToDto(saved));
-
-        log.info("Véhicule créé avec l'ID: {}", saved.getId());
-        return mapToDto(saved);
     }
 
     @Override
+    @WithSpan("getVehicleById")
     @Transactional(readOnly = true)
-    public VehicleResponseDto getVehicleById(UUID id) {
-        log.info("Recherche du véhicule ID: {}", id);
+    public VehicleResponseDto getVehicleById(@SpanAttribute("vehicle.id") UUID id) {
+        enrichLogsWithTraceContext();
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Véhicule non trouvé avec l'ID: " + id));
+                .orElseThrow(() -> {
+                    Span.current().setStatus(StatusCode.ERROR, "Non trouvé");
+                    telemetry.getOperationErrorsCounter().add(1,
+                            Attributes.of(AttributeKey.stringKey("operation"), "getById",
+                                           AttributeKey.stringKey("error.type"), "not_found"));
+                    return new RuntimeException("Véhicule non trouvé: " + id);
+                });
         return mapToDto(vehicle);
     }
 
     @Override
+    @WithSpan("getAllVehicles")
     @Transactional(readOnly = true)
     public List<VehicleResponseDto> getAllVehicles() {
-        log.info("Récupération de tous les véhicules");
-        return vehicleRepository.findAll()
-                .stream()
+        enrichLogsWithTraceContext();
+        List<VehicleResponseDto> result = vehicleRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+        Span.current().setAttribute("vehicles.count", result.size());
+        return result;
     }
 
     @Override
+    @WithSpan("getDisponibles")
     @Transactional(readOnly = true)
-    public List<VehicleResponseDto> getVehiclesByStatut(String statut) {
-        log.info("Recherche des véhicules par statut: {}", statut);
+    public List<VehicleResponseDto> getDisponibles() {
+        enrichLogsWithTraceContext();
+        List<VehicleResponseDto> result = vehicleRepository.findByStatut(VehicleStatus.DISPONIBLE).stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+        Span.current().setAttribute("vehicles.count", result.size());
+        return result;
+    }
+
+    @Override
+    @WithSpan("getVehiclesByStatut")
+    @Transactional(readOnly = true)
+    public List<VehicleResponseDto> getVehiclesByStatut(@SpanAttribute("vehicle.statut") String statut) {
+        enrichLogsWithTraceContext();
         VehicleStatus status = VehicleStatus.valueOf(statut.toUpperCase());
-        return vehicleRepository.findByStatut(status)
-                .stream()
+        return vehicleRepository.findByStatut(status).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public VehicleResponseDto updateVehicle(UUID id, VehicleRequestDto request) {
-        log.info("Mise à jour du véhicule ID: {}", id);
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Véhicule non trouvé avec l'ID: " + id));
+    @WithSpan("updateVehicle")
+    public VehicleResponseDto updateVehicle(@SpanAttribute("vehicle.id") UUID id, VehicleRequestDto request) {
+        long startTime = System.currentTimeMillis();
+        enrichLogsWithTraceContext();
+        try {
+            Vehicle vehicle = vehicleRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Véhicule non trouvé: " + id));
 
-        vehicle.setMarque(request.getMarque());
-        vehicle.setModele(request.getModele());
-        vehicle.setImmatriculation(request.getImmatriculation());
-        vehicle.setType(request.getType());
-        vehicle.setAnnee(request.getAnnee());
+            vehicle.setMarque(request.getMarque());
+            vehicle.setModele(request.getModele());
+            vehicle.setImmatriculation(request.getImmatriculation());
+            vehicle.setType(request.getType());
+            vehicle.setAnnee(request.getAnnee());
+            if (request.getStatut() != null) vehicle.setStatut(VehicleStatus.valueOf(request.getStatut().toUpperCase()));
+            if (request.getKilometrage() != null) vehicle.setKilometrage(request.getKilometrage());
 
-        if (request.getStatut() != null) {
-            vehicle.setStatut(VehicleStatus.valueOf(request.getStatut().toUpperCase()));
+            Vehicle updated = vehicleRepository.save(vehicle);
+            VehicleResponseDto response = mapToDto(updated);
+            vehicleProducer.sendVehicleEvent("VEHICLE_UPDATED", response);
+            return response;
+        } finally {
+            recordDuration("update", startTime);
         }
-        if (request.getKilometrage() != null) {
-            vehicle.setKilometrage(request.getKilometrage());
-        }
-
-        Vehicle updated = vehicleRepository.save(vehicle);
-
-        // Publier l'événement Kafka
-        vehicleProducer.sendVehicleEvent("VEHICLE_UPDATED", mapToDto(updated));
-
-        log.info("Véhicule mis à jour: {}", updated.getId());
-        return mapToDto(updated);
     }
 
     @Override
-    public void deleteVehicle(UUID id) {
-        log.info("Suppression du véhicule ID: {}", id);
-        if (!vehicleRepository.existsById(id)) {
-            throw new RuntimeException("Véhicule non trouvé avec l'ID: " + id);
+    @WithSpan("updateStatut")
+    public VehicleResponseDto updateStatut(@SpanAttribute("vehicle.id") UUID id, String statut) {
+        long startTime = System.currentTimeMillis();
+        enrichLogsWithTraceContext();
+        try {
+            Vehicle vehicle = vehicleRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Véhicule non trouvé: " + id));
+            vehicle.setStatut(VehicleStatus.valueOf(statut.toUpperCase()));
+            Vehicle updated = vehicleRepository.save(vehicle);
+            VehicleResponseDto response = mapToDto(updated);
+            vehicleProducer.sendVehicleEvent("VEHICLE_UPDATED", response);
+            return response;
+        } finally {
+            recordDuration("update_statut", startTime);
         }
-        vehicleRepository.deleteById(id);
-
-        // Publier l'événement Kafka
-        VehicleResponseDto dto = new VehicleResponseDto();
-        dto.setId(id);
-        vehicleProducer.sendVehicleEvent("VEHICLE_DELETED", dto);
-
-        log.info("Véhicule supprimé: {}", id);
     }
 
-    // --- Mappers ---
+    @Override
+    @WithSpan("updateKilometrage")
+    public VehicleResponseDto updateKilometrage(@SpanAttribute("vehicle.id") UUID id, Integer kilometrage) {
+        long startTime = System.currentTimeMillis();
+        enrichLogsWithTraceContext();
+        try {
+            Vehicle vehicle = vehicleRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Véhicule non trouvé: " + id));
+            vehicle.setKilometrage(kilometrage);
+            Vehicle updated = vehicleRepository.save(vehicle);
+            VehicleResponseDto response = mapToDto(updated);
+            vehicleProducer.sendVehicleEvent("VEHICLE_UPDATED", response);
+            return response;
+        } finally {
+            recordDuration("update_kilometrage", startTime);
+        }
+    }
+
+    @Override
+    @WithSpan("deleteVehicle")
+    public void deleteVehicle(@SpanAttribute("vehicle.id") UUID id) {
+        long startTime = System.currentTimeMillis();
+        enrichLogsWithTraceContext();
+        try {
+            if (!vehicleRepository.existsById(id)) throw new RuntimeException("Véhicule non trouvé: " + id);
+            vehicleRepository.deleteById(id);
+            VehicleResponseDto dto = new VehicleResponseDto();
+            dto.setId_vehicule(id);
+            vehicleProducer.sendVehicleEvent("VEHICLE_DELETED", dto);
+            telemetry.getVehiclesDeletedCounter().add(1);
+        } finally {
+            recordDuration("delete", startTime);
+        }
+    }
+
+    private void recordDuration(String operation, long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+        telemetry.getOperationDurationHistogram().record(duration,
+                Attributes.of(AttributeKey.stringKey("operation"), operation));
+    }
+
+    private void enrichLogsWithTraceContext() {
+        Span currentSpan = Span.current();
+        if (currentSpan != null && currentSpan.getSpanContext().isValid()) {
+            MDC.put("traceId", currentSpan.getSpanContext().getTraceId());
+            MDC.put("spanId", currentSpan.getSpanContext().getSpanId());
+        }
+    }
 
     private Vehicle mapToEntity(VehicleRequestDto dto) {
         Vehicle vehicle = new Vehicle();
@@ -130,18 +235,14 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setImmatriculation(dto.getImmatriculation());
         vehicle.setType(dto.getType());
         vehicle.setAnnee(dto.getAnnee());
-        if (dto.getStatut() != null) {
-            vehicle.setStatut(VehicleStatus.valueOf(dto.getStatut().toUpperCase()));
-        }
-        if (dto.getKilometrage() != null) {
-            vehicle.setKilometrage(dto.getKilometrage());
-        }
+        if (dto.getStatut() != null) vehicle.setStatut(VehicleStatus.valueOf(dto.getStatut().toUpperCase()));
+        if (dto.getKilometrage() != null) vehicle.setKilometrage(dto.getKilometrage());
         return vehicle;
     }
 
     private VehicleResponseDto mapToDto(Vehicle vehicle) {
         VehicleResponseDto dto = new VehicleResponseDto();
-        dto.setId(vehicle.getId());
+        dto.setId_vehicule(vehicle.getId());
         dto.setMarque(vehicle.getMarque());
         dto.setModele(vehicle.getModele());
         dto.setImmatriculation(vehicle.getImmatriculation());
