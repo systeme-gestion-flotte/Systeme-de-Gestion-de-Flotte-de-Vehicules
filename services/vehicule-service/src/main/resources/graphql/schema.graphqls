@@ -1,0 +1,43 @@
+type Vehicle {
+    id: ID!
+    marque: String!
+    modele: String!
+    immatriculation: String!
+    statut: String!
+    kilometrage: Int
+    type: String!
+    annee: Int!
+    createdAt: String
+    updatedAt: String
+}
+
+type Query {
+    allVehicles: [Vehicle!]!
+    vehicleById(id: ID!): Vehicle
+    vehiclesByStatut(statut: String!): [Vehicle!]!
+}
+
+type Mutation {
+    createVehicle(
+        marque: String!,
+        modele: String!,
+        immatriculation: String!,
+        type: String!,
+        statut: String,
+        kilometrage: Int,
+        annee: Int!
+    ): Vehicle!
+
+    updateVehicle(
+        id: ID!,
+        marque: String!,
+        modele: String!,
+        immatriculation: String!,
+        type: String!,
+        statut: String,
+        kilometrage: Int,
+        annee: Int!
+    ): Vehicle!
+
+    deleteVehicle(id: ID!): Boolean!
+}
