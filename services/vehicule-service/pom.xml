@@ -65,13 +65,21 @@
             <version>2.11.0</version>
         </dependency>
 
-        <!-- OpenTelemetry API (Tracer, Span, Meter) -->
+        <!-- OpenTelemetry API -->
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
+            <version>1.44.1</version>
         </dependency>
 
-        <!-- OpenTelemetry Annotations (@WithSpan, @SpanAttribute) -->
+        <!-- OpenTelemetry SDK (nécessaire pour l'auto-configuration) -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>1.44.1</version>
+        </dependency>
+
+        <!-- OpenTelemetry Annotations -->
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
