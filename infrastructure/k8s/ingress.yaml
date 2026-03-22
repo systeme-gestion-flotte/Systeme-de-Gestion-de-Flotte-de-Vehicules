@@ -3,8 +3,6 @@ kind: Ingress
 metadata:
   name: fleet-ingress-traefik
   namespace: fleet-management
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   ingressClassName: traefik
   rules:
@@ -32,38 +30,17 @@ spec:
                 name: maintenance-service
                 port:
                   number: 8000
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: fleet-ingress-nginx
-  namespace: fleet-management
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: api.fleet.local
-      http:
-        paths:
-          - path: /api/vehicules
+          - path: /api/evenements
             pathType: Prefix
             backend:
               service:
-                name: vehicule-service
-                port:
-                  number: 4000
-          - path: /api/conducteurs
-            pathType: Prefix
-            backend:
-              service:
-                name: conducteur-service
-                port:
-                  number: 3000
-          - path: /api/maintenance
-            pathType: Prefix
-            backend:
-              service:
-                name: maintenance-service
+                name: evenement-service
                 port:
                   number: 8000
+          - path: /api/localisation
+            pathType: Prefix
+            backend:
+              service:
+                name: localisation-service
+                port:
+                  number: 50051
