@@ -14,10 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Contrôleur REST aligné avec gateway/openapi/vehicule-openapi.yaml.
- * Utilise /api/vehicules (Français).
- */
+
 @RestController
 @RequestMapping("/api/vehicules")
 public class VehicleController {
