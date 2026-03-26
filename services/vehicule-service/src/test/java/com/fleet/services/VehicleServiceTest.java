@@ -7,6 +7,7 @@ import com.fleet.entity.Vehicle.VehicleStatus;
 import com.fleet.kafka.VehicleProducer;
 import com.fleet.repository.VehicleRepository;
 import com.fleet.telemetry.VehicleTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.trace.Tracer;
@@ -45,6 +46,9 @@ class VehicleServiceTest {
 
     @Mock
     private LongCounter longCounter;
+
+    @Mock
+    private io.opentelemetry.api.metrics.DoubleHistogramBuilder doubleHistogramBuilder;
 
     @Mock
     private LongHistogram longHistogram;
@@ -92,6 +96,14 @@ class VehicleServiceTest {
     }
 
     @Test
+    void createVehicle_DuplicateImmatriculation_ThrowsException() {
+        when(vehicleRepository.existsByImmatriculation("AB-123-CD")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> vehicleService.createVehicle(requestDto));
+        verify(telemetry.getOperationErrorsCounter()).add(eq(1L), any(Attributes.class));
+    }
+
+    @Test
     void getVehicleById_Success() {
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(vehicle));
 
@@ -102,11 +114,33 @@ class VehicleServiceTest {
     }
 
     @Test
+    void getVehicleById_NotFound_ThrowsException() {
+        when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> vehicleService.getVehicleById(vehicleId));
+        verify(telemetry.getOperationErrorsCounter()).add(eq(1L), any(Attributes.class));
+    }
+
+    @Test
     void getAllVehicles_Success() {
         when(vehicleRepository.findAll()).thenReturn(Arrays.asList(vehicle));
         List<VehicleResponseDto> result = vehicleService.getAllVehicles();
         assertEquals(1, result.size());
         assertEquals(vehicleId, result.get(0).getId_vehicule());
+    }
+
+    @Test
+    void getDisponibles_Success() {
+        when(vehicleRepository.findByStatut(VehicleStatus.DISPONIBLE)).thenReturn(Arrays.asList(vehicle));
+        List<VehicleResponseDto> result = vehicleService.getDisponibles();
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getVehiclesByStatut_Success() {
+        when(vehicleRepository.findByStatut(VehicleStatus.DISPONIBLE)).thenReturn(Arrays.asList(vehicle));
+        List<VehicleResponseDto> result = vehicleService.getVehiclesByStatut("DISPONIBLE");
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -121,10 +155,38 @@ class VehicleServiceTest {
     }
 
     @Test
+    void updateStatut_Success() {
+        when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle);
+
+        VehicleResponseDto result = vehicleService.updateStatut(vehicleId, "EN_MAINTENANCE");
+
+        assertNotNull(result);
+        verify(vehicleProducer).sendVehicleEvent(eq("VEHICLE_UPDATED"), any(VehicleResponseDto.class));
+    }
+
+    @Test
+    void updateKilometrage_Success() {
+        when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle);
+
+        VehicleResponseDto result = vehicleService.updateKilometrage(vehicleId, 60000);
+
+        assertNotNull(result);
+        verify(vehicleProducer).sendVehicleEvent(eq("VEHICLE_UPDATED"), any(VehicleResponseDto.class));
+    }
+
+    @Test
     void deleteVehicle_Success() {
         when(vehicleRepository.existsById(vehicleId)).thenReturn(true);
         vehicleService.deleteVehicle(vehicleId);
         verify(vehicleRepository).deleteById(vehicleId);
         verify(vehicleProducer).sendVehicleEvent(eq("VEHICLE_DELETED"), any(VehicleResponseDto.class));
+    }
+
+    @Test
+    void deleteVehicle_NotFound_ThrowsException() {
+        when(vehicleRepository.existsById(vehicleId)).thenReturn(false);
+        assertThrows(RuntimeException.class, () -> vehicleService.deleteVehicle(vehicleId));
     }
 }

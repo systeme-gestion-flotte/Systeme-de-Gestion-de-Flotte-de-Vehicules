@@ -23,6 +23,9 @@ public class VehicleResponseDto {
     public UUID getId_vehicule() { return id_vehicule; }
     public void setId_vehicule(UUID id_vehicule) { this.id_vehicule = id_vehicule; }
 
+    // Alias pour GraphQL 'id'
+    public UUID getId() { return id_vehicule; }
+
     public String getMarque() { return marque; }
     public void setMarque(String marque) { this.marque = marque; }
 
