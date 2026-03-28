@@ -4,8 +4,7 @@ const { readFileSync, readdirSync } = require('fs');
 const { join } = require('path');
 const resolvers = require('./graphql/resolvers');
 
-// Load all .graphql files from gateway/openapi
-const openapiDir = join(__dirname, 'openapi');
+const openapiDir = join(__dirname, 'graphql/schema');
 const typeDefs = readdirSync(openapiDir)
   .filter(file => file.endsWith('.graphql'))
   .map(file => readFileSync(join(openapiDir, file), 'utf8'))
@@ -20,7 +19,7 @@ async function startServer() {
   const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
   });
-  console.log(`🚀 Gateway ready at ${url}`);
+  console.log(`Gateway ready at ${url}`);
 }
 
 startServer();
