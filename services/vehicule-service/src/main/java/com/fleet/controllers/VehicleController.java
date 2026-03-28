@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 
 @RestController
 @RequestMapping("/api/vehicules")
@@ -26,62 +28,115 @@ public class VehicleController {
         this.vehicleService = vehicleService;
     }
 
+    // ─── CREATE ──────────────────────────────────────────────────────────────
+
     @PostMapping
-    public ResponseEntity<VehicleResponseDto> createVehicle(@Valid @RequestBody VehicleRequestDto request) {
-        log.info("POST /api/vehicules - Création");
-        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.createVehicle(request));
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    public ResponseEntity<VehicleResponseDto> createVehicle(
+            @Valid @RequestBody VehicleRequestDto request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("POST /api/vehicules - Création par [{}] role(s): {}",
+                jwt.getClaimAsString("preferred_username"),
+                jwt.getClaimAsStringList("realm_access"));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(vehicleService.createVehicle(request));
     }
 
+    // ─── READ ─────────────────────────────────────────────────────────────────
+
     @GetMapping
-    public ResponseEntity<List<VehicleResponseDto>> getAllVehicles() {
-        log.info("GET /api/vehicules - Liste complète");
+    @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien', 'utilisateur')")
+    public ResponseEntity<List<VehicleResponseDto>> getAllVehicles(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("GET /api/vehicules - Liste complète demandée par [{}]",
+                jwt.getClaimAsString("preferred_username"));
         return ResponseEntity.ok(vehicleService.getAllVehicles());
     }
 
     @GetMapping("/disponibles")
-    public ResponseEntity<List<VehicleResponseDto>> getDisponibles() {
-        log.info("GET /api/vehicules/disponibles - Filtrage disponibles");
+    @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien', 'utilisateur')")
+    public ResponseEntity<List<VehicleResponseDto>> getDisponibles(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("GET /api/vehicules/disponibles - par [{}]",
+                jwt.getClaimAsString("preferred_username"));
         return ResponseEntity.ok(vehicleService.getDisponibles());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VehicleResponseDto> getVehicleById(@PathVariable UUID id) {
-        log.info("GET /api/vehicules/{} - Détail", id);
+    @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien', 'utilisateur')")
+    public ResponseEntity<VehicleResponseDto> getVehicleById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("GET /api/vehicules/{} - par [{}]",
+                id, jwt.getClaimAsString("preferred_username"));
         return ResponseEntity.ok(vehicleService.getVehicleById(id));
     }
 
     @GetMapping("/statut/{statut}")
-    public ResponseEntity<List<VehicleResponseDto>> getVehiclesByStatut(@PathVariable String statut) {
-        log.info("GET /api/vehicules/statut/{} - Filtrage par statut", statut);
+    @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien', 'utilisateur')")
+    public ResponseEntity<List<VehicleResponseDto>> getVehiclesByStatut(
+            @PathVariable String statut,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("GET /api/vehicules/statut/{} - par [{}]",
+                statut, jwt.getClaimAsString("preferred_username"));
         return ResponseEntity.ok(vehicleService.getVehiclesByStatut(statut));
     }
 
+    // ─── UPDATE ───────────────────────────────────────────────────────────────
+
     @PutMapping("/{id}")
-    public ResponseEntity<VehicleResponseDto> updateVehicle(@PathVariable UUID id,
-                                                             @Valid @RequestBody VehicleRequestDto request) {
-        log.info("PUT /api/vehicules/{} - Mise à jour complète", id);
+    @PreAuthorize("hasAnyRole('admin', 'manager')")
+    public ResponseEntity<VehicleResponseDto> updateVehicle(
+            @PathVariable UUID id,
+            @Valid @RequestBody VehicleRequestDto request,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("PUT /api/vehicules/{} - Mise à jour par [{}]",
+                id, jwt.getClaimAsString("preferred_username"));
         return ResponseEntity.ok(vehicleService.updateVehicle(id, request));
     }
 
     @PatchMapping("/{id}/statut")
-    public ResponseEntity<VehicleResponseDto> updateStatut(@PathVariable UUID id,
-                                                           @RequestBody Map<String, String> body) {
+    @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien')")
+    public ResponseEntity<VehicleResponseDto> updateStatut(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal Jwt jwt) {
+
         String statut = body.get("statut");
-        log.info("PATCH /api/vehicules/{}/statut - Nouveau statut: {}", id, statut);
+        log.info("PATCH /api/vehicules/{}/statut - [{}] -> statut: {}",
+                id, jwt.getClaimAsString("preferred_username"), statut);
         return ResponseEntity.ok(vehicleService.updateStatut(id, statut));
     }
 
     @PatchMapping("/{id}/kilometrage")
-    public ResponseEntity<VehicleResponseDto> updateKilometrage(@PathVariable UUID id,
-                                                               @RequestBody Map<String, Integer> body) {
+    @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien')")
+    public ResponseEntity<VehicleResponseDto> updateKilometrage(
+            @PathVariable UUID id,
+            @RequestBody Map<String, Integer> body,
+            @AuthenticationPrincipal Jwt jwt) {
+
         Integer kilometrage = body.get("kilometrage");
-        log.info("PATCH /api/vehicules/{}/kilometrage - Nouveau kilométrage: {}", id, kilometrage);
+        log.info("PATCH /api/vehicules/{}/kilometrage - [{}] -> km: {}",
+                id, jwt.getClaimAsString("preferred_username"), kilometrage);
         return ResponseEntity.ok(vehicleService.updateKilometrage(id, kilometrage));
     }
 
+    // ─── DELETE ───────────────────────────────────────────────────────────────
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVehicle(@PathVariable UUID id) {
-        log.info("DELETE /api/vehicules/{} - Suppression", id);
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<Void> deleteVehicle(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        log.info("DELETE /api/vehicules/{} - Suppression par [{}]",
+                id, jwt.getClaimAsString("preferred_username"));
         vehicleService.deleteVehicle(id);
         return ResponseEntity.noContent().build();
     }

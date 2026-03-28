@@ -32,7 +32,16 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
+      
+ # Keycloak / OAuth2
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Issuer pour valider le claim "iss" du token
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9080/realms/fleet-management}
+          # JWKS explicite pour éviter l'issuer mismatch Docker <-> localhost
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:9080/realms/fleet-management/protocol/openid-connect/certs}
 
 # Custom properties
 app:
