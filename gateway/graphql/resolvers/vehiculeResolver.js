@@ -1,5 +1,6 @@
 const axios = require('axios');
 
+// Le service écoute sur 4000 dans Docker, mais est mappé sur 8081 à l'extérieur
 const VEHICULE_SERVICE_URL = process.env.VEHICULE_SERVICE_URL || 'http://localhost:8081/api/vehicules';
 
 const vehiculeResolver = {
@@ -12,7 +13,11 @@ const vehiculeResolver = {
         });
         return response.data;
       } catch (error) {
-        console.error('Error fetching vehicules:', error.message);
+        if (error.response) {
+          console.error('Error fetching vehicules details:', error.response.status, error.response.data);
+        } else {
+          console.error('Error fetching vehicules:', error.message);
+        }
         throw new Error('Failed to fetch vehicules');
       }
     },
@@ -23,7 +28,11 @@ const vehiculeResolver = {
         });
         return response.data;
       } catch (error) {
-        console.error(`Error fetching vehicule ${id}:`, error.message);
+        if (error.response) {
+          console.error(`Error fetching vehicule ${id} details:`, error.response.status, error.response.data);
+        } else {
+          console.error(`Error fetching vehicule ${id}:`, error.message);
+        }
         throw new Error('Vehicule not found');
       }
     },
@@ -48,7 +57,11 @@ const vehiculeResolver = {
         });
         return response.data;
       } catch (error) {
-        console.error('Error creating vehicule:', error.message);
+        if (error.response) {
+          console.error('Error creating vehicule details:', error.response.status, error.response.data);
+        } else {
+          console.error('Error creating vehicule:', error.message);
+        }
         throw new Error('Failed to create vehicule');
       }
     },

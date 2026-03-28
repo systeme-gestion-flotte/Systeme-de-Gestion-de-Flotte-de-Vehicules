@@ -104,6 +104,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=adminpassword
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KEYCLOAK_ISSUER_URI=http://localhost:9080/realms/fleet-management
+      - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
+      - OTEL_SDK_DISABLED=true
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
       - kafka

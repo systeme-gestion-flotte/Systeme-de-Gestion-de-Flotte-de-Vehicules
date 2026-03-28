@@ -38,10 +38,10 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Issuer pour valider le claim "iss" du token 
+          # Issuer pour le claim "iss" (doit correspondre au token)
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9080/realms/fleet-management}
-          # JWKS explicite pour éviter l'issuer mismatch Docker <-> localhost
-          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://host.docker.internal:9080/realms/fleet-management/protocol/openid-connect/certs}
+          # JWKS via Docker interne pour que le service puisse atteindre Keycloak
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs}
 
 # Custom properties
 app:
@@ -60,11 +60,13 @@ management:
       prometheus:
         enabled: true
 
-# OpenTelemetry
+# OpenTelemetry (Désactivé pour nettoyer les logs ou à reppointer vers otel-collector)
 otel:
+  sdk:
+    disabled: true
   exporter:
     otlp:
-      endpoint: http://localhost:4317
+      endpoint: http://otel-collector:4317
   service:
     name: vehicule-service
 
@@ -72,5 +74,6 @@ otel:
 logging:
   level:
     com.fleet: DEBUG
+    org.springframework.security: DEBUG
     org.springframework.kafka: INFO
     org.springframework.graphql: DEBUG
