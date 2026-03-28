@@ -1,0 +1,13 @@
+apiVersion: v2
+name: fleet-observabilite
+description: Helm Umbrella Chart centralisant Prometheus, Grafana, Loki et Jaeger
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: kube-prometheus-stack
+    version: "56.6.2"
+    repository: "https://prometheus-community.github.io/helm-charts"
+  - name: loki-stack
+    version: "2.10.2"
+    repository: "https://grafana.github.io/helm-charts"

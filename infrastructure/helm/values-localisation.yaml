@@ -1,0 +1,13 @@
+replicaCount: 1
+
+image:
+  repository: fleet-localisation-service
+  tag: "latest"
+
+service:
+  port: 8085
+
+env:
+  SPRING_PROFILES_ACTIVE: docker
+  KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/fleet-management
+  SPRING_DATASOURCE_URL: jdbc:postgresql://timescaledb:5432/localisation_db

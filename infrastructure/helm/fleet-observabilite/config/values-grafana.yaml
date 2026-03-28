@@ -1,0 +1,25 @@
+kube-prometheus-stack:
+  grafana:
+    enabled: true
+    adminPassword: "admin"
+    
+    ingress:
+      enabled: false
+      
+    # Injection automatique des DataSources (Loki pour les Logs, Jaeger pour les Traces)
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        url: http://fleet-obs-loki:3100
+        access: proxy
+        isDefault: false
+      - name: Jaeger
+        type: jaeger
+        url: http://jaeger:16686
+        access: proxy
+        isDefault: false
+  
+    dashboards:
+      default:
+        # my-custom-dashboard:
+        #   file: dashboards/my-dashboard.json

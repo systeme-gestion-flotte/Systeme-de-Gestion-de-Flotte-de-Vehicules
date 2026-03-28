@@ -1,0 +1,16 @@
+# Valeurs par defaut du microservice
+replicaCount: 1
+
+image:
+  repository: "mon-repo/mon-service"
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+env: {}
+  # Exemple d'injection dynamique :
+  # SPRING_PROFILES_ACTIVE: prod
+  # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka

@@ -1,0 +1,8 @@
+keycloak:
+  image: "quay.io/keycloak/keycloak:22.0.1"
+  replicas: 1
+  service:
+    port: 8080
+    type: ClusterIP
+  adminUser: "admin"
+  adminPassword: "admin"

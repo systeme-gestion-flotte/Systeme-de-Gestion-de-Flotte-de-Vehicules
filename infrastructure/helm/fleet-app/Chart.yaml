@@ -1,0 +1,6 @@
+apiVersion: v2
+name: fleet-app
+description: Un Helm Chart generique pour deployer les microservices de Fleet Management
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
