@@ -1,0 +1,209 @@
+﻿openapi: 3.0.3
+info:
+  title: Service Localisation API
+  description: Gestion du suivi GPS des vehicules et du geofencing (zones)
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8085/api/localisation
+    description: Developpement local
+
+security:
+  - oauth2Keycloak: [utilisateur]
+  - bearerAuth: []
+
+paths:
+  /positions/{vehicule_id}/derniere:
+    parameters:
+      - name: vehicule_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Recuperer la derniere position connue d'un vehicule
+      tags: [Positions]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Position' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /positions/{vehicule_id}/historique:
+    parameters:
+      - name: vehicule_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Recuperer l'historique des positions d'un vehicule
+      tags: [Positions]
+      parameters:
+        - name: depuis
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+        - name: jusqu_a
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 500 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Position' }
+
+  /positions:
+    post:
+      summary: Enregistrer une nouvelle position (Ping GPS)
+      tags: [Positions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePositionDto' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Position' }
+
+  /zones:
+    get:
+      summary: Liste toutes les zones (Geofencing)
+      tags: [Zones]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Zone' }
+
+    post:
+      summary: Creer une nouvelle zone de geofencing
+      tags: [Zones]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateZoneDto' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Zone' }
+
+  /zones/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Recuperer une zone par son ID
+      tags: [Zones]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Zone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    put:
+      summary: Mettre a jour une zone
+      tags: [Zones]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateZoneDto' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Zone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      summary: Supprimer une zone
+      tags: [Zones]
+      responses:
+        '204': { description: Zone supprimee }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    oauth2Keycloak:
+      type: oauth2
+      description: OAuth2 Authorization Code via Keycloak realm fleet-management
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          refreshUrl: http://localhost:8080/realms/fleet-management/protocol/openid-connect/token
+          scopes:
+            admin: Acces administrateur
+            utilisateur: Consultation
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TypeZone:
+      type: string
+      enum: [AUTORISEE, INTERDITE]
+
+    Position:
+      type: object
+      properties:
+        id_position:    { type: string, format: uuid }
+        vehicule_id:    { type: string, format: uuid }
+        latitude:       { type: number, format: float }
+        longitude:      { type: number, format: float }
+        vitesse:        { type: number, format: float, nullable: true }
+        horodatage:     { type: string, format: date-time }
+
+    Zone:
+      type: object
+      properties:
+        id_zone:          { type: string, format: uuid }
+        nom:              { type: string }
+        type:             { $ref: '#/components/schemas/TypeZone' }
+        latitude_centre:  { type: number, format: float }
+        longitude_centre: { type: number, format: float }
+        rayon_metres:     { type: number, format: float }
+        actif:            { type: boolean }
+        created_at:       { type: string, format: date-time }
+
+    CreatePositionDto:
+      type: object
+      required: [vehicule_id, latitude, longitude]
+      properties:
+        vehicule_id:    { type: string, format: uuid }
+        latitude:       { type: number, format: float }
+        longitude:      { type: number, format: float }
+        vitesse:        { type: number, format: float }
+
+    CreateZoneDto:
+      type: object
+      required: [nom, type, latitude_centre, longitude_centre, rayon_metres]
+      properties:
+        nom:              { type: string }
+        type:             { $ref: '#/components/schemas/TypeZone' }
+        latitude_centre:  { type: number, format: float }
+        longitude_centre: { type: number, format: float }
+        rayon_metres:     { type: number, format: float }
+
+  responses:
+    Unauthorized:
+      description: Token JWT manquant ou invalide
+    BadRequest:
+      description: Donnees invalides
+    NotFound:
+      description: Ressource introuvable
