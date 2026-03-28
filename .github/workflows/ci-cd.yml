@@ -42,7 +42,7 @@ jobs:
           sudo mv kubeval /usr/local/bin/
 
       - name: Valider les manifests YAML
-        run: kubeval --ignore-missing-schemas infrastructure/k8s/*.yaml
+        run: kubeval --ignore-missing-schemas infrastructure/kubernetes/**/*.yaml
 
   test:
     name: Tests
