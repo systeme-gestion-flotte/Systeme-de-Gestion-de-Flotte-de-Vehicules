@@ -1,0 +1,65 @@
+scalar DateTime
+scalar UUID
+
+enum TypeZone {
+  AUTORISEE
+  INTERDITE
+}
+
+type Position {
+  id_position: UUID!
+  vehicule_id: UUID!
+  latitude: Float!
+  longitude: Float!
+  vitesse: Float
+  horodatage: DateTime!
+}
+
+type Zone {
+  id_zone: UUID!
+  nom: String!
+  type: TypeZone!
+  latitude_centre: Float!
+  longitude_centre: Float!
+  rayon_metres: Float!
+  actif: Boolean!
+  created_at: DateTime!
+}
+
+input CreatePositionInput {
+  vehicule_id: UUID!
+  latitude: Float!
+  longitude: Float!
+  vitesse: Float
+}
+
+input CreateZoneInput {
+  nom: String!
+  type: TypeZone!
+  latitude_centre: Float!
+  longitude_centre: Float!
+  rayon_metres: Float!
+}
+
+type Query {
+  dernierePosition(vehicule_id: UUID!): Position
+  historiquePositions(
+    vehicule_id: UUID!,
+    depuis: DateTime!,
+    jusqu_a: DateTime,
+    limit: Int = 500
+  ): [Position!]!
+  zones: [Zone!]!
+  zone(id: UUID!): Zone
+}
+
+type Mutation {
+  createPosition(input: CreatePositionInput!): Position!
+  createZone(input: CreateZoneInput!): Zone!
+  updateZone(id: UUID!, input: CreateZoneInput!): Zone!
+  deleteZone(id: UUID!): Boolean!
+}
+
+type Subscription {
+  positionUpdated(vehicule_id: UUID): Position!
+}

@@ -1,0 +1,61 @@
+scalar DateTime
+scalar UUID
+
+enum TypeAlerte {
+  SORTIE_ZONE
+  EXCES_VITESSE
+  PANNE
+  MAINTENANCE_DUE
+}
+
+enum SeveriteAlerte {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+type Evenement {
+  id_evenement: UUID!
+  vehicule_id: UUID!
+  source_service: String!
+  type_alerte: TypeAlerte!
+  severite: SeveriteAlerte!
+  description: String!
+  acquitte: Boolean!
+  horodatage: DateTime!
+}
+
+type StatsEvenements {
+  total: Int!
+  non_acquittes: Int!
+  sortie_zone: Int!
+  exces_vitesse: Int!
+  panne: Int!
+  maintenance_due: Int!
+  info: Int!
+  warning: Int!
+  critical: Int!
+}
+
+type Query {
+  evenements(
+    vehicule_id: UUID,
+    type_alerte: TypeAlerte,
+    severite: SeveriteAlerte,
+    acquitte: Boolean,
+    depuis: DateTime,
+    page: Int = 1,
+    limit: Int = 20
+  ): [Evenement!]!
+  evenement(id: UUID!): Evenement
+  evenementsCritiques: [Evenement!]!
+  statsEvenements(depuis: DateTime!): StatsEvenements!
+}
+
+type Mutation {
+  acquitterEvenement(id: UUID!): Evenement!
+}
+
+type Subscription {
+  eventRaised(vehicule_id: UUID, severite: SeveriteAlerte): Evenement!
+}

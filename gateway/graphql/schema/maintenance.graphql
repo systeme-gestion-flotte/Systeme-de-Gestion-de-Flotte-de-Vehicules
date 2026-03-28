@@ -1,0 +1,71 @@
+scalar DateTime
+scalar UUID
+
+enum TypeIntervention {
+  REVISION
+  REPARATION
+  CONTROLE_TECHNIQUE
+}
+
+enum StatutIntervention {
+  PLANIFIEE
+  EN_COURS
+  TERMINEE
+}
+
+type Intervention {
+  id_intervention: UUID!
+  vehicule_id: UUID!
+  vehicule_immat: String!
+  technicien_id: String!
+  type: TypeIntervention!
+  date_planifiee: DateTime!
+  date_realisation: DateTime
+  statut: StatutIntervention!
+  cout: Float
+  description: String
+  created_at: DateTime!
+}
+
+input CreateInterventionInput {
+  vehicule_id: UUID!
+  vehicule_immat: String!
+  technicien_id: String!
+  type: TypeIntervention!
+  date_planifiee: DateTime!
+  description: String
+}
+
+input UpdateInterventionInput {
+  date_planifiee: DateTime
+  technicien_id: String
+  description: String
+}
+
+type Query {
+  interventions(
+    statut: StatutIntervention,
+    type: TypeIntervention,
+    vehicule_id: UUID,
+    technicien_id: String,
+    page: Int = 1,
+    limit: Int = 20
+  ): [Intervention!]!
+  intervention(id: UUID!): Intervention
+}
+
+type Mutation {
+  createIntervention(input: CreateInterventionInput!): Intervention!
+  updateIntervention(id: UUID!, input: UpdateInterventionInput!): Intervention!
+  demarrerIntervention(id: UUID!): Intervention!
+  terminerIntervention(
+    id: UUID!,
+    date_realisation: DateTime!,
+    cout: Float,
+    description: String
+  ): Intervention!
+}
+
+type Subscription {
+  interventionStatusChanged(vehicule_id: UUID): Intervention!
+}

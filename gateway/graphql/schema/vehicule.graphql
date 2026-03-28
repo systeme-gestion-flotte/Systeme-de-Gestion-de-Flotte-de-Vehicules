@@ -1,0 +1,56 @@
+scalar Date
+scalar DateTime
+scalar UUID
+
+enum StatutVehicule {
+  DISPONIBLE
+  EN_COURSE
+  EN_MAINTENANCE
+}
+
+type Vehicule {
+  id_vehicule: UUID!
+  immatriculation: String!
+  marque: String!
+  modele: String!
+  annee: Int!
+  statut: StatutVehicule!
+  kilometrage: Int!
+  created_at: DateTime!
+}
+
+input VehiculeFilterInput {
+  statut: StatutVehicule
+  marque: String
+  page: Int = 1
+  limit: Int = 20
+}
+
+input CreateVehiculeInput {
+  immatriculation: String!
+  marque: String!
+  modele: String!
+  annee: Int!
+  kilometrage: Int = 0
+}
+
+input UpdateVehiculeInput {
+  marque: String
+  modele: String
+  annee: Int
+  kilometrage: Int
+}
+
+type Query {
+  vehicules(filter: VehiculeFilterInput): [Vehicule!]!
+  vehicule(id: UUID!): Vehicule
+  vehiculesDisponibles: [Vehicule!]!
+}
+
+type Mutation {
+  createVehicule(input: CreateVehiculeInput!): Vehicule!
+  updateVehicule(id: UUID!, input: UpdateVehiculeInput!): Vehicule!
+  deleteVehicule(id: UUID!): Boolean!
+  updateVehiculeStatut(id: UUID!, statut: StatutVehicule!): Vehicule!
+  updateVehiculeKilometrage(id: UUID!, kilometrage: Int!): Vehicule!
+}

@@ -71,11 +71,6 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
-        <!-- Spring GraphQL -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-graphql</artifactId>
-        </dependency>
 
         <!-- OpenTelemetry API -->
         <dependency>
@@ -140,12 +135,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring GraphQL Test -->
-        <dependency>
-            <groupId>org.springframework.graphql</groupId>
-            <artifactId>spring-graphql-test</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

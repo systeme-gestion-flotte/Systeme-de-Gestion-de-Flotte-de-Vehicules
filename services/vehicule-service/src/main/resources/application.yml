@@ -33,14 +33,6 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
-  # GraphQL
-  graphql:
-    graphiql:
-      enabled: true
-    path: /graphql
-    schema:
-      printer:
-        enabled: true
 
 # Custom properties
 app:
