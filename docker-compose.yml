@@ -72,6 +72,10 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: admin
       KC_DB_PASSWORD: adminpassword
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 9080
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HOSTNAME_STRICT: "false"
     command: start-dev --import-realm
     ports:
       - "9080:8080"
@@ -99,7 +103,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=adminpassword
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/fleet-management
+      - KEYCLOAK_ISSUER_URI=http://localhost:9080/realms/fleet-management
     depends_on:
       - postgres
       - kafka

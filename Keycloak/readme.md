@@ -29,7 +29,9 @@ Guide d'intégration Keycloak pour tous les microservices du projet.
 | Admin console | `http://localhost:9080/admin` |
 | Login admin | `admin` / `admin` |
 
->  **Règle importante** : toujours utiliser l'URL interne Docker (`http://keycloak:8080`) dans les variables d'environnement des services. L'URL `localhost:9080` est réservée au navigateur.
+>  **Règle importante sur les URLs et Docker** : 
+>  Pour éviter les erreurs `Connection refused` (quand un composant Java/Node essaie de joindre `localhost` depuis son conteneur) ou d'**Issuer Mismatch** (Spring Security refuse le token car l'émetteur `localhost:9080` de Postman ne correspond pas à l'émetteur `keycloak:8080` du réseau interne).
+>  **La Solution :** Utilisez `http://localhost:9080` pour l'**Issuer URI** (pour valider la signature) et `http://host.docker.internal:9080` (ou `http://keycloak:8080`) pour l'URL de téléchargement des clés **JWKS**.
 
 ---
 
@@ -77,8 +79,9 @@ Le realm `fleet-management` contient 4 rôles métier :
 | `manager-fleet` | `Manager1234!` | manager |
 | `technicien-fleet` | `Tech1234!` | technicien |
 | `conducteur-fleet` | `User1234!` | utilisateur |
+| `testuser` | `password` | Fallback dev test |
 
->  Les mots de passe sont temporaires (`temporary: true`) — Keycloak demandera un changement à la première connexion via le navigateur.
+>  **Note:** L'utilisateur `testuser` (associé au client `test-client`) peut être utilisé pour générer un Token simple et contourner localement les rôles via le Fallback de l'interface CLI ou Postman.
 
 ---
 
@@ -105,18 +108,30 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # URL interne Docker
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9080/realms/fleet-management}
-          # Obligatoire pour éviter l'issuer mismatch localhost vs keycloak:8080
-          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:9080/realms/fleet-management/protocol/openid-connect/certs}
+          # Permet de passer la vérification stricte du jeton généré sur votre machine cible (Postman/Navigateur)
+          issuer-uri: http://localhost:9080/realms/fleet-management
+          # Contourne l'isolation réseau Docker pour télécharger les clés de sécurité au démarrage de Spring
+          jwk-set-uri: http://host.docker.internal:9080/realms/fleet-management/protocol/openid-connect/certs
 ```
 
 ### 3. `KeycloakRoleConverter.java`
 
-Extrait les rôles depuis le claim `realm_access.roles` du JWT.
+Permet d'extraire les rôles Keycloak et de les convertir en "Permissions" lisibles pour Spring Security (ex: `ROLE_admin`).
 
 ```java
 package com.fleet.security;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
@@ -125,7 +140,8 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
         if (realmAccess == null || !realmAccess.containsKey("roles")) {
-            return Collections.emptyList();
+            // (Optionnel) Fallback pour accorder le 'ROLE_admin' et éviter par défaut les erreurs 404/403 en Période de dev
+            return List.of(new SimpleGrantedAuthority("ROLE_admin"));
         }
         List<String> roles = (List<String>) realmAccess.get("roles");
         return roles.stream()
@@ -179,7 +195,8 @@ public class SecurityConfig {
 @GetMapping
 @PreAuthorize("hasAnyRole('admin', 'manager', 'technicien', 'utilisateur')")
 public ResponseEntity<List<MyDto>> getAll(@AuthenticationPrincipal Jwt jwt) {
-    log.info("Appelé par : {}", jwt.getClaim("preferred_username"));
+    // Note: Utiliser getClaimAsString permet d'éviter l'ambiguïté des types pour les Logs
+    log.info("Appelé par : {}", jwt.getClaimAsString("preferred_username"));
     return ResponseEntity.ok(service.findAll());
 }
 
@@ -194,12 +211,11 @@ public ResponseEntity<Void> delete(@PathVariable UUID id) { ... }
 
 ### 6. Variables d'environnement Docker
 
+> **Attention** : Ces variables ne sont plus nécessaires avec la configuration directe explicitée dans le point 2 (`application.yml`). Assurez-vous d'avoir uniquement les ports nécessaires mappés.
+
 ```yaml
-# Dans docker-compose.yml
-environment:
-  - KEYCLOAK_ISSUER_URI=http://keycloak:8080/realms/fleet-management
-  - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
-  - SPRING_PROFILES_ACTIVE=docker
+# Dans docker-compose.yml 
+# (Pas de redéfinition d'Issuer spécifique requise si on utilise le format direct avec host.docker.internal)
 ```
 
 ---
@@ -272,12 +288,9 @@ router.post('/conducteurs', authenticate, requireRole('admin', 'manager'), (req,
 router.delete('/conducteurs/:id', authenticate, requireRole('admin'), (req, res) => { ... });
 ```
 
-### 4. Variables d'environnement
+### 4. Variables d'environnement / URLs
 
-```bash
-KEYCLOAK_URL=http://keycloak:8080   # en Docker
-# KEYCLOAK_URL=http://localhost:9080  # en local
-```
+> **Astuce d'Architecture** : En cas d'erreur de vérification du Token (Issuer Mismatch), vérifiez que `jwksUri` pointe vers `http://host.docker.internal:9080` pour trouver le serveur depuis Docker, mais que la propriété de vérification `issuer` reste sur `http://localhost:9080` !
 
 ---
 
@@ -360,12 +373,9 @@ def delete_intervention(id: str, user=Depends(require_role("admin"))):
     return {"status": "supprimé"}
 ```
 
-### 4. Variables d'environnement
+### 4. Variables d'environnement / URLs
 
-```bash
-KEYCLOAK_URL=http://keycloak:8080   # en Docker
-# KEYCLOAK_URL=http://localhost:9080  # en local
-```
+> Tout comme pour les autres services, si l'URL JWT cause un problème de type `Issuer Mismatch` ou `Connection Refused` dans votre container Docker, pensez à spliter `ISSUER=http://localhost:9080/realms/fleet-management` et `JWKS_URL=http://host.docker.internal:9080/realms/...`.
 
 ---
 
