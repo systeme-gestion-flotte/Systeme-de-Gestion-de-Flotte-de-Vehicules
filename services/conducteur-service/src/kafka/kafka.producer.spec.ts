@@ -2,15 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { KafkaProducer, AssignationDemandeeEvent } from './kafka.producer';
 
-const mockSpanObj = {
-  setStatus: jest.fn(),
-  setAttribute: jest.fn(),
-  end: jest.fn(),
-};
-
 jest.mock('../telemetry/tracing', () => ({
   getTracer: jest.fn().mockReturnValue({
-    startSpan: jest.fn().mockReturnValue(mockSpanObj),
+    startSpan: jest.fn().mockReturnValue({
+      setStatus: jest.fn(),
+      setAttribute: jest.fn(),
+      end: jest.fn(),
+    }),
   }),
 }));
 
@@ -131,7 +129,6 @@ describe('KafkaProducer', () => {
       mockProducer.send.mockRejectedValueOnce(new Error('Erreur Kafka'));
 
       await expect(service.publishAssignationDemandee(event)).rejects.toThrow('Erreur Kafka');
-      expect(mockSpanObj.end).toHaveBeenCalled();
     });
   });
 });

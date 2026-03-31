@@ -33,7 +33,7 @@ docker compose up -d --build
 | **GraphQL Gateway** | **4000** | [Apollo Sandbox](http://localhost:4000) | JWT requis |
 | **Keycloak** | 9080 | [Admin Console](http://localhost:9080) | admin / admin |
 | **Véhicule Service** | 8081 | REST / GraphQL | Java / Spring Boot |
-| **Conducteur Service** | 3001 | REST API | Node.js / Express |
+| **Conducteur Service** | 3000 | REST API | NestJS / TypeScript |
 | **Maintenance Service** | **8002** | [FastAPI Docs](http://localhost:8002/docs) | Python / FastAPI |
 | **Événement Service** | 8003 | REST API | Python / FastAPI |
 | **Localisation Service**| 50051 | gRPC | Go |
@@ -64,6 +64,13 @@ Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le 
 - **Fédération** : Mise en place de l'API Gateway Apollo pour unifier les services.
 - **Qualité** : Couverture de tests PyTest de **83%** sur le service Maintenance.
 
+### Semaine 4 : Service Conducteur & Assignations
+- **Service Conducteur** : CRUD complet des profils conducteurs avec NestJS/TypeScript et TypeORM + PostgreSQL.
+- **Assignations** : Gestion complète du cycle de vie des assignations conducteur-véhicule.
+- **Saga Kafka** : Chorégraphie via Kafka — publication de `AssignationDemandee` et consommation de `VehiculeAssigneAvecSucces` / `EchecAssignationVehicule`.
+- **Validation métier** : Vérification automatique de la validité du permis avant toute assignation.
+- **Qualité** : Couverture Jest de **90%** (78 tests unitaires).
+
 ---
 
 ## 5. Tests
@@ -73,4 +80,6 @@ Pour lancer les tests d'un service spécifique :
 cd services/vehicule-service && mvn test
 # Python
 cd services/maintenance-service && pytest --cov=app
+# Node.js (conducteur-service)
+cd services/conducteur-service && npm run test:cov
 ```

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1774994552296" clover="3.2.0">
-  <project timestamp="1774994552296" name="All files">
-    <metrics statements="448" coveredstatements="402" conditionals="73" coveredconditionals="57" methods="64" coveredmethods="54" elements="585" coveredelements="513" complexity="0" loc="448" ncloc="448" packages="10" files="19" classes="19"/>
+<coverage generated="1774998691075" clover="3.2.0">
+  <project timestamp="1774998691075" name="All files">
+    <metrics statements="448" coveredstatements="430" conditionals="73" coveredconditionals="59" methods="64" coveredmethods="59" elements="585" coveredelements="548" complexity="0" loc="448" ncloc="448" packages="10" files="19" classes="19"/>
     <package name="assignations">
       <metrics statements="108" coveredstatements="103" conditionals="13" coveredconditionals="8" methods="13" coveredmethods="12"/>
       <file name="assignations.controller.ts" path="C:\Systeme-de-Gestion-de-Flotte-de-Vehicules\services\conducteur-service\src\assignations\assignations.controller.ts">
@@ -435,7 +435,7 @@
       </file>
     </package>
     <package name="kafka">
-      <metrics statements="94" coveredstatements="66" conditionals="11" coveredconditionals="8" methods="13" coveredmethods="8"/>
+      <metrics statements="94" coveredstatements="94" conditionals="11" coveredconditionals="10" methods="13" coveredmethods="13"/>
       <file name="kafka.consumer.ts" path="C:\Systeme-de-Gestion-de-Flotte-de-Vehicules\services\conducteur-service\src\kafka\kafka.consumer.ts">
         <metrics statements="60" coveredstatements="60" conditionals="9" coveredconditionals="8" methods="8" coveredmethods="8"/>
         <line num="1" count="1" type="stmt"/>
@@ -500,41 +500,41 @@
         <line num="129" count="1" type="stmt"/>
       </file>
       <file name="kafka.producer.ts" path="C:\Systeme-de-Gestion-de-Flotte-de-Vehicules\services\conducteur-service\src\kafka\kafka.producer.ts">
-        <metrics statements="34" coveredstatements="6" conditionals="2" coveredconditionals="0" methods="5" coveredmethods="0"/>
-        <line num="1" count="2" type="stmt"/>
-        <line num="2" count="2" type="stmt"/>
-        <line num="3" count="2" type="stmt"/>
-        <line num="4" count="2" type="stmt"/>
-        <line num="5" count="2" type="stmt"/>
-        <line num="18" count="2" type="stmt"/>
-        <line num="19" count="0" type="stmt"/>
-        <line num="22" count="0" type="stmt"/>
-        <line num="24" count="0" type="stmt"/>
-        <line num="27" count="0" type="stmt"/>
-        <line num="28" count="0" type="stmt"/>
-        <line num="36" count="0" type="stmt"/>
-        <line num="37" count="0" type="stmt"/>
-        <line num="41" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="42" count="0" type="stmt"/>
-        <line num="43" count="0" type="stmt"/>
-        <line num="48" count="0" type="stmt"/>
-        <line num="49" count="0" type="stmt"/>
-        <line num="50" count="0" type="stmt"/>
-        <line num="51" count="0" type="stmt"/>
-        <line num="53" count="0" type="stmt"/>
-        <line num="58" count="0" type="stmt"/>
-        <line num="59" count="0" type="stmt"/>
-        <line num="60" count="0" type="stmt"/>
-        <line num="62" count="0" type="stmt"/>
-        <line num="63" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="64" count="0" type="stmt"/>
-        <line num="67" count="0" type="stmt"/>
-        <line num="83" count="0" type="stmt"/>
-        <line num="84" count="0" type="stmt"/>
-        <line num="86" count="0" type="stmt"/>
-        <line num="87" count="0" type="stmt"/>
-        <line num="88" count="0" type="stmt"/>
-        <line num="90" count="0" type="stmt"/>
+        <metrics statements="34" coveredstatements="34" conditionals="2" coveredconditionals="2" methods="5" coveredmethods="5"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="2" count="3" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="18" count="3" type="stmt"/>
+        <line num="19" count="7" type="stmt"/>
+        <line num="22" count="7" type="stmt"/>
+        <line num="24" count="7" type="stmt"/>
+        <line num="27" count="7" type="stmt"/>
+        <line num="28" count="7" type="stmt"/>
+        <line num="36" count="7" type="stmt"/>
+        <line num="37" count="7" type="stmt"/>
+        <line num="41" count="2" type="cond" truecount="1" falsecount="0"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="48" count="8" type="stmt"/>
+        <line num="49" count="8" type="stmt"/>
+        <line num="50" count="5" type="stmt"/>
+        <line num="51" count="5" type="stmt"/>
+        <line num="53" count="3" type="stmt"/>
+        <line num="58" count="3" type="stmt"/>
+        <line num="59" count="3" type="stmt"/>
+        <line num="60" count="3" type="stmt"/>
+        <line num="62" count="3" type="stmt"/>
+        <line num="63" count="3" type="cond" truecount="1" falsecount="0"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="67" count="3" type="stmt"/>
+        <line num="83" count="2" type="stmt"/>
+        <line num="84" count="2" type="stmt"/>
+        <line num="86" count="1" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="88" count="1" type="stmt"/>
+        <line num="90" count="3" type="stmt"/>
       </file>
     </package>
   </project>
