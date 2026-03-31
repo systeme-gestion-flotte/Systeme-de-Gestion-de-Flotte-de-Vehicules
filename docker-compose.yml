@@ -139,6 +139,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/maintenance
       - KAFKA_BROKER=kafka:9092
+      - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
+      - JWKS_URL=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
     depends_on:
       - postgres
       - kafka
