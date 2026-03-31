@@ -18,6 +18,3 @@ dist/
 
 # Fichiers de configuration sensibles
 k8s/secrets.yaml
-
-# Claude Code (configuration locale de l'assistant)
-.claude/settings.local.json

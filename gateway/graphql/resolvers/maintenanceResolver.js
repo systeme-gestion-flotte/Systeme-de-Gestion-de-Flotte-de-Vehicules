@@ -10,7 +10,8 @@ const maintenanceResolver = {
           params,
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        // FastAPI renvoie { data: [...], total: X }, GraphQL attend le tableau
+        return response.data.data || response.data;
       } catch (error) {
         console.error('Error fetching interventions:', error.message);
         throw new Error('Failed to fetch interventions');

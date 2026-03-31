@@ -139,6 +139,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/maintenance
       - KAFKA_BROKER=kafka:9092
+      - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
+      - JWKS_URL=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
     depends_on:
       - postgres
       - kafka
@@ -176,6 +178,30 @@ services:
     depends_on:
       - timescaledb
       - kafka
+    networks:
+      - fleet-network
+
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: fleet-api-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      # Les URLs DNS de Docker pour contourner localhost en pointant sur les conteneurs internes
+      - VEHICULE_SERVICE_URL=http://vehicule-service:4000/api/vehicules
+      - CONDUCTEUR_SERVICE_URL=http://conducteur-service:3000/api/conducteurs
+      - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000/api/interventions
+      - EVENEMENT_SERVICE_URL=http://evenement-service:8000/api/evenements
+      - LOCALISATION_SERVICE_URL=http://localisation-service:50051
+    depends_on:
+      - vehicule-service
+      - conducteur-service
+      - maintenance-service
+      - evenement-service
+      - localisation-service
+      - keycloak
     networks:
       - fleet-network
 

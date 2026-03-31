@@ -5,113 +5,72 @@ Architecture microservices distribuée pour la gestion d'une flotte de véhicule
 
 ---
 
-## 1. État de l'Infrastructure (Semaine 2)
+## 1. État de l'Infrastructure
 
-L'infrastructure supporte le développement local via Docker Compose et l'orchestration via Kubernetes (Minikube). Tous les composants sont déployés dans le namespace `fleet-management` sur Kubernetes.
+L'infrastructure supporte le développement local via Docker Compose et l'orchestration via Kubernetes (Minikube). 
 
 ### Stack Technique
-- **Orchestration** : Kubernetes (Minikube) & Docker Compose.
-- **Bus & Data** : Apache Kafka (Strimzi), PostgreSQL (Bitnami), Redis.
-- **Passerelle API** : Traefik (Ingress Controller).
-- **Sécurité** : Keycloak (SSO).
-- **Observabilité** : OpenTelemetry (Collector), Jaeger, Prometheus, Loki, Grafana.
+- **Orchestration** : Docker Compose & Kubernetes.
+- **Microservices** : Java (Spring), Node.js (Express), Python (FastAPI), Go.
+- **Communication** : Kafka (KRaft), gRPC, GraphQL.
+- **Passerelle API** : Apollo GraphQL Gateway & Traefik.
+- **Sécurité** : Keycloak (SSO/OIDC).
+- **Observabilité** : OpenTelemetry, Jaeger, Prometheus, Loki, Grafana.
 
 ---
 
 ## 2. Développement Local (Docker Compose)
 
-### Lancement
+### Lancement rapide
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-### Accès aux Services (Ports et Routes)
+### Accès aux Services (Développement)
 
-| Service | Port Local (Docker) | Route K8s (Ingress) | Type / Info |
+| Service | Port Local | URL / Interface | Authentification |
 | :--- | :--- | :--- | :--- |
-| **Keycloak Admin** | http://localhost:9080 | - | admin / admin |
-| **PostgreSQL** | localhost:5432 | - | admin / adminpassword |
-| **pgAdmin** | http://localhost:5050 | - | admin@flotte.com / admin |
-| **Véhicule Service** | http://localhost:8081 | `api.fleet.local/api/vehicules` | REST (Port 4000) + GraphQL |
-| **Conducteur Service** | http://localhost:3001 | `api.fleet.local/api/conducteurs` | Node.js (Port 3000) |
-| **Maintenance Service** | http://localhost:8002 | `api.fleet.local/api/maintenance` | Python (Port 8000) |
-| **Événement Service** | http://localhost:8003 | `api.fleet.local/api/evenements` | Python/FastAPI (Port 8000) |
-| **Localisation Service**| localhost:50051 | `api.fleet.local/api/localisation` | gRPC (Port 50051) |
-| **Redis** | localhost:6379| - | No Auth |
-| **Kafka** | localhost:9092| - | KRaft / Strimzi |
-
-> [!NOTE]
-> Pour accéder aux routes Kubernetes, assurez-vous d'avoir ajouté `$(minikube ip) api.fleet.local` à votre fichier `/etc/hosts`.
+| **GraphQL Gateway** | **4000** | [Apollo Sandbox](http://localhost:4000) | JWT requis |
+| **Keycloak** | 9080 | [Admin Console](http://localhost:9080) | admin / admin |
+| **Véhicule Service** | 8081 | REST / GraphQL | Java / Spring Boot |
+| **Conducteur Service** | 3001 | REST API | Node.js / Express |
+| **Maintenance Service** | **8002** | [FastAPI Docs](http://localhost:8002/docs) | Python / FastAPI |
+| **Événement Service** | 8003 | REST API | Python / FastAPI |
+| **Localisation Service**| 50051 | gRPC | Go |
+| **Grafana** | 3000 | [Dashboard](http://localhost:3000) | admin / admin |
+| **Jaeger** | 16686 | [UI Tracing](http://localhost:16686) | - |
 
 ---
 
-## 3. Déploiement Kubernetes (Minikube)
+## 3. Déploiement Kubernetes
 
-### Étape 1 : Préparer l'environnement
-```bash
-minikube start
-minikube addons enable ingress
-# Configurer Docker pour utiliser Minikube
-eval $(minikube docker-env)
-```
+Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le dossier `infrastructure/kubernetes`.
 
-### Étape 2 : Namespace et Secrets
-```bash
-kubectl apply -f infrastructure/k8s/namespace.yaml
-kubectl apply -f infrastructure/k8s/secrets.yaml
-```
-
-### Étape 3 : Déployer l'Infrastructure (Helm)
-```bash
-# Ajouter les dépôts Helm
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo add strimzi https://strimzi.io/charts/
-helm repo add traefik https://helm.traefik.io/traefik
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-# Installer les composants (Postgres, Redis, Kafka, Observabilité)
-helm install traefik traefik/traefik -n fleet-management
-helm install postgres bitnami/postgresql -n fleet-management --set auth.password=adminpassword --set auth.database=vehicules_db
-helm install redis bitnami/redis -n fleet-management --set auth.enabled=false
-helm install strimzi-operator strimzi/strimzi-kafka-operator -n fleet-management
-helm install obs prometheus-community/kube-prometheus-stack -n fleet-management
-```
-
-### Étape 4 : Déployer les Microservices
-```bash
-# Builder les images dans Minikube
-docker build -t fleet-vehicule-service:latest ./services/vehicule-service
-docker build -t fleet-conducteur-service:latest ./services/conducteur-service
-
-# Appliquer les manifests K8s
-kubectl apply -f infrastructure/k8s/kafka.yaml
-kubectl apply -f infrastructure/k8s/vehicule-deployment.yaml
-kubectl apply -f infrastructure/k8s/vehicule-service.yaml
-kubectl apply -f infrastructure/k8s/ingress.yaml
-```
+👉 **[Voir le guide de déploiement Kubernetes](infrastructure/kubernetes/readme.md)**
 
 ---
 
-## 4. Implémentation Microservice (Semaine 3)
+## 4. Historique du Développement
 
-Le `vehicule-service` implémente les fonctionnalités de communication inter-services et d'observabilité.
+### Semaine 3 : Service Véhicule & Qualité
+- **Communication** : Publication automatique d'événements Kafka `VEHICLE_CREATED`.
+- **Observabilité** : Intégration de l'auto-instrumentation OpenTelemetry.
+- **Qualité** : Couverture JaCoCo de **81%** sur le service Java.
 
-### Fonctionnalités
-- **GraphQL** : Point d'entrée à l'adresse `/graphql`.
-- **Kafka** : Publication d'événements `VEHICLE_CREATED` et `VEHICLE_UPDATED`.
-- **Telemetry** : Traces distribuées via OpenTelemetry Collector et Jaeger.
+### Semaine 4 : Service Maintenance & Intégration (Actuel)
+- **Service Maintenance** : Architecture Clean avec FastAPI et SQLAlchemy.
+- **Sécurité** : Validation des rôles (`admin`, `technicien`) via Keycloak.
+- **Kafka Consumer** : Synchronisation temps réel des véhicules depuis Kafka.
+- **Fédération** : Mise en place de l'API Gateway Apollo pour unifier les services.
+- **Qualité** : Couverture de tests PyTest de **83%** sur le service Maintenance.
 
-### Qualité et Tests
-- **Couverture JaCoCo** : **81%** atteinte (Objectif > 80%).
-- **Tests** : 23 tests unitaires et d'intégration validés.
+---
 
-Exécution des tests :
+## 5. Tests
+Pour lancer les tests d'un service spécifique :
 ```bash
-cd services/vehicule-service
-mvn clean test jacoco:report
+# Java
+cd services/vehicule-service && mvn test
+# Python
+cd services/maintenance-service && pytest --cov=app
 ```
-
-
-
-
