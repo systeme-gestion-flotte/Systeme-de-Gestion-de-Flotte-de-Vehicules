@@ -20,14 +20,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         jwksUri,
       }),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      audience: 'account',
       issuer,
       algorithms: ['RS256'],
       ignoreExpiration: false,
     });
+
+    this.logger.debug(`Initializing JwtStrategy with:`);
+    this.logger.debug(`- jwksUri: ${jwksUri}`);
+    this.logger.debug(`- issuer: ${issuer}`);
   }
 
   async validate(payload: any) {
+    this.logger.debug(`JWT validated successfully for user: ${payload.preferred_username}`);
     const roles = payload?.realm_access?.roles || [];
     const resourceRoles = payload?.resource_access?.['fleet-app']?.roles || [];
 

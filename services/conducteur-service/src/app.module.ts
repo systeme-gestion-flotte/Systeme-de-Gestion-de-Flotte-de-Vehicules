@@ -26,7 +26,7 @@ import { RolesGuard } from './auth/roles.guard';
         type: 'postgres',
         url: configService.get<string>('database.url'),
         entities: [Conducteur, Assignation],
-        synchronize: false,
+        synchronize: true,
         logging: process.env.NODE_ENV !== 'production',
         ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
       }),

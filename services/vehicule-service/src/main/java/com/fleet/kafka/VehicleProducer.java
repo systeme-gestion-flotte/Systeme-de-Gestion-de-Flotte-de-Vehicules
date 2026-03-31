@@ -39,7 +39,21 @@ public class VehicleProducer {
         }
     }
 
-    // Classe interne pour l'événement
+    public void sendAssignationResponse(String eventType, String assignationId, String vehiculeId, String conducteurId, String raison) {
+        try {
+            String timestamp = java.time.Instant.now().toString();
+            AssignationResponseEvent event = new AssignationResponseEvent(
+                eventType, assignationId, vehiculeId, conducteurId, raison, timestamp
+            );
+            String payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send(vehicleEventsTopic, assignationId, payload);
+            log.info("Événement réponse d'assignation envoyé: {} [assignId={}]", eventType, assignationId);
+        } catch (JsonProcessingException e) {
+            log.error("Erreur de sérialisation pour la réponse d'assignation", e);
+        }
+    }
+
+    // Classe interne pour l'événement standard
     public static class VehicleEvent {
         private String eventType;
         private VehicleResponseDto vehicle;
@@ -61,5 +75,44 @@ public class VehicleProducer {
 
         public long getTimestamp() { return timestamp; }
         public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    }
+
+    // Classe interne pour l'événement d'assignation attendu par conducteur-service
+    public static class AssignationResponseEvent {
+        private String eventType;
+        private String assignationId;
+        private String vehiculeId;
+        private String conducteurId;
+        private String raison;
+        private String timestamp;
+
+        public AssignationResponseEvent() {}
+
+        public AssignationResponseEvent(String eventType, String assignationId, String vehiculeId, String conducteurId, String raison, String timestamp) {
+            this.eventType = eventType;
+            this.assignationId = assignationId;
+            this.vehiculeId = vehiculeId;
+            this.conducteurId = conducteurId;
+            this.raison = raison;
+            this.timestamp = timestamp;
+        }
+
+        public String getEventType() { return eventType; }
+        public void setEventType(String eventType) { this.eventType = eventType; }
+
+        public String getAssignationId() { return assignationId; }
+        public void setAssignationId(String assignationId) { this.assignationId = assignationId; }
+
+        public String getVehiculeId() { return vehiculeId; }
+        public void setVehiculeId(String vehiculeId) { this.vehiculeId = vehiculeId; }
+
+        public String getConducteurId() { return conducteurId; }
+        public void setConducteurId(String conducteurId) { this.conducteurId = conducteurId; }
+
+        public String getRaison() { return raison; }
+        public void setRaison(String raison) { this.raison = raison; }
+
+        public String getTimestamp() { return timestamp; }
+        public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
     }
 }
