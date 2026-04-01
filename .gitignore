@@ -18,4 +18,4 @@ dist/
 coverage/
 
 # Fichiers de configuration sensibles
-k8s/secrets.yaml
+infrastructure/kubernetes/secrets.yaml
