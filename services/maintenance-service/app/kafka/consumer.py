@@ -14,24 +14,24 @@ def process_message(msg):
         data = json.loads(msg.value().decode('utf-8'))
         db = SessionLocal()
         
-        if topic == "fleet.vehicules.created":
-            vehicule_id = data.get("id") or data.get("vehiculeId")
-            immat = data.get("immatriculation")
-            statut = data.get("statut")
+        if "eventType" in data and "vehicle" in data:
+            event_type = data["eventType"]
+            vehicle_data = data["vehicle"]
+            vehicule_id = vehicle_data.get("id_vehicule") or vehicle_data.get("id")
+            immat = vehicle_data.get("immatriculation")
+            statut = vehicle_data.get("statut")
             
-            if vehicule_id and immat:
-                crud.setup_vehicule_local(db, id=vehicule_id, immatriculation=immat, statut=statut)
-                print(f"[Maintenance Consumer] Véhicule {immat} ({vehicule_id}) synchronisé (CREATION).")
-                
-        elif topic == "fleet.vehicules.statut":
-            vehicule_id = data.get("vehiculeId") or data.get("id")
-            nouveau_statut = data.get("statut")
+            if event_type == "VEHICULE_CREE" or topic == "fleet.vehicules.created":
+                if vehicule_id and immat:
+                    crud.setup_vehicule_local(db, id=vehicule_id, immatriculation=immat, statut=statut)
+                    print(f"[Maintenance Consumer] Véhicule {immat} ({vehicule_id}) synchronisé (CREATION).")
             
-            if vehicule_id and nouveau_statut:
-                crud.update_vehicule_statut(db, id=vehicule_id, statut=nouveau_statut)
-                print(f"[Maintenance Consumer] Statut du véhicule {vehicule_id} mis à jour : {nouveau_statut}.")
-                if nouveau_statut == "EN_PANNE":
-                    print(f"ALERTE: Véhicule {vehicule_id} est EN_PANNE. Une maintenance est potentiellement requise.")
+            elif event_type == "VEHICULE_STATUT_CHANGE" or topic == "fleet.vehicules.statut":
+                if vehicule_id and statut:
+                    crud.update_vehicule_statut(db, id=vehicule_id, statut=statut)
+                    print(f"[Maintenance Consumer] Statut du véhicule {vehicule_id} mis à jour : {statut}.")
+                    if statut == "EN_PANNE":
+                        print(f"ALERTE: Véhicule {vehicule_id} est EN_PANNE. Une maintenance est potentiellement requise.")
                     
         db.close()
     except Exception as e:
@@ -50,11 +50,11 @@ async def start_consumer():
     
     try:
         consumer = Consumer(config)
-        consumer.subscribe(["fleet.vehicules.created", "fleet.vehicules.statut"])
+        consumer.subscribe(["fleet.vehicules.events", "vehicle-events"])
         print("[Maintenance Consumer] Démarré et en écoute...")
         
         while True:
-            await asyncio.sleep(0.1) # Rendre la boucle asynchrone non-blocante
+            await asyncio.sleep(0.1) 
             msg = consumer.poll(0)
             if msg is None:
                 continue
@@ -64,8 +64,6 @@ async def start_consumer():
                 else:
                     print(f"Kafka erreur: {msg.error()}")
                     continue
-            
-            # Traiter le message dans un thread pour ne pas bloquer l'Event Loop FastAPI FastAPI
             await asyncio.to_thread(process_message, msg)
             
     except Exception as e:

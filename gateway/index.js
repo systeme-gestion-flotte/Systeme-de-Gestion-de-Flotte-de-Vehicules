@@ -8,7 +8,9 @@ const path = require('path');
 const resolvers = require('./graphql/resolvers/index.js');
 
 // 2. Charger et fusionner tous nos Menus (Nos fichiers .graphql)
-const typesArray = loadFilesSync(path.join(__dirname, './graphql/schema'), { extensions: ['graphql'] });
+// 2. Charger et fusionner tous nos Menus (Nos fichiers .graphql)
+const typesPaths = path.join(__dirname, './graphql/schema');
+const typesArray = loadFilesSync(typesPaths, { extensions: ['graphql'] });
 const typeDefs = mergeTypeDefs(typesArray);
 
 // 3. Fabriquer le Serveur Gateway

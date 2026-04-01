@@ -8,6 +8,14 @@ enum StatutAssignation {
   ANNULEE
 }
 
+enum CategoriePermis {
+  A
+  B
+  C
+  D
+  E
+}
+
 type Conducteur {
   id_conducteur: UUID!
   keycloak_user_id: String!
@@ -15,7 +23,7 @@ type Conducteur {
   prenom: String!
   email: String!
   numero_permis: String!
-  date_validite_permis: Date!
+  categorie: [CategoriePermis!]!
   actif: Boolean!
   created_at: DateTime!
 }
@@ -24,6 +32,8 @@ type Assignation {
   id_assignation: UUID!
   vehicule_id: UUID!
   conducteur_id: UUID!
+  vehicule: Vehicule
+  conducteur: Conducteur
   date_depart: DateTime!
   date_retour: DateTime
   statut: StatutAssignation!
@@ -37,6 +47,7 @@ input CreateConducteurInput {
   email: String!
   numero_permis: String!
   date_validite_permis: Date!
+  categorie: [CategoriePermis!]!
 }
 
 input UpdateConducteurInput {

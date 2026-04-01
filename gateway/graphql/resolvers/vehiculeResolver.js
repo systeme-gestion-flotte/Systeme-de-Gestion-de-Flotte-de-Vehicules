@@ -1,35 +1,37 @@
 const axios = require('axios');
+const { mapToSnakeCase, mapToCamelCase } = require('./utils');
 
 // Le service écoute sur 4000 dans Docker, mais est mappé sur 8081 à l'extérieur
-const VEHICULE_SERVICE_URL = process.env.VEHICULE_SERVICE_URL || 'http://localhost:8081/api/vehicules';
+const BASE_URL = process.env.VEHICULE_SERVICE_URL || 'http://localhost:8081';
+const VEHICULE_URL = `${BASE_URL}/api/vehicules`;
 
 const vehiculeResolver = {
   Query: {
     vehicules: async (_, { filter }, { token }) => {
       try {
-        const response = await axios.get(VEHICULE_SERVICE_URL, { 
-          params: filter,
+        const response = await axios.get(VEHICULE_URL, { 
+          params: mapToCamelCase(filter),
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
         if (error.response) {
-          console.error('Error fetching vehicules details:', error.response.status, error.response.data);
+          console.error('Error fetching vehicules (Service details):', error.response.status, JSON.stringify(error.response.data));
         } else {
           console.error('Error fetching vehicules:', error.message);
         }
-        throw new Error('Failed to fetch vehicules');
+        throw new Error('Failed to fetch vehicules list');
       }
     },
     vehicule: async (_, { id }, { token }) => {
       try {
-        const response = await axios.get(`${VEHICULE_SERVICE_URL}/${id}`, {
+        const response = await axios.get(`${VEHICULE_URL}/${id}`, {
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
         if (error.response) {
-          console.error(`Error fetching vehicule ${id} details:`, error.response.status, error.response.data);
+          console.error(`Error fetching vehicule ${id} (Service details):`, error.response.status, JSON.stringify(error.response.data));
         } else {
           console.error(`Error fetching vehicule ${id}:`, error.message);
         }
@@ -38,12 +40,16 @@ const vehiculeResolver = {
     },
     vehiculesDisponibles: async (_, __, { token }) => {
       try {
-        const response = await axios.get(`${VEHICULE_SERVICE_URL}/disponibles`, {
+        const response = await axios.get(`${VEHICULE_URL}/disponibles`, {
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
-        console.error('Error fetching available vehicules:', error.message);
+        if (error.response) {
+          console.error('Error fetching available vehicules (Service details):', error.response.status, JSON.stringify(error.response.data));
+        } else {
+          console.error('Error fetching available vehicules:', error.message);
+        }
         throw new Error('Failed to fetch available vehicules');
       }
     },
@@ -52,13 +58,13 @@ const vehiculeResolver = {
   Mutation: {
     createVehicule: async (_, { input }, { token }) => {
       try {
-        const response = await axios.post(VEHICULE_SERVICE_URL, input, {
+        const response = await axios.post(VEHICULE_URL, mapToCamelCase(input), {
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
         if (error.response) {
-          console.error('Error creating vehicule details:', error.response.status, error.response.data);
+          console.error('Error creating vehicule (Service details):', error.response.status, JSON.stringify(error.response.data));
         } else {
           console.error('Error creating vehicule:', error.message);
         }
@@ -67,45 +73,61 @@ const vehiculeResolver = {
     },
     updateVehicule: async (_, { id, input }, { token }) => {
       try {
-        const response = await axios.put(`${VEHICULE_SERVICE_URL}/${id}`, input, {
+        const response = await axios.put(`${VEHICULE_URL}/${id}`, mapToCamelCase(input), {
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
-        console.error(`Error updating vehicule ${id}:`, error.message);
+        if (error.response) {
+          console.error(`Error updating vehicule ${id} (Service details):`, error.response.status, JSON.stringify(error.response.data));
+        } else {
+          console.error(`Error updating vehicule ${id}:`, error.message);
+        }
         throw new Error('Failed to update vehicule');
       }
     },
     deleteVehicule: async (_, { id }, { token }) => {
       try {
-        await axios.delete(`${VEHICULE_SERVICE_URL}/${id}`, {
+        await axios.delete(`${VEHICULE_URL}/${id}`, {
           headers: token ? { Authorization: token } : {}
         });
         return true;
       } catch (error) {
-        console.error(`Error deleting vehicule ${id}:`, error.message);
+        if (error.response) {
+          console.error(`Error deleting vehicule ${id} (Service details):`, error.response.status, JSON.stringify(error.response.data));
+        } else {
+          console.error(`Error deleting vehicule ${id}:`, error.message);
+        }
         throw new Error('Failed to delete vehicule');
       }
     },
     updateVehiculeStatut: async (_, { id, statut }, { token }) => {
       try {
-        const response = await axios.patch(`${VEHICULE_SERVICE_URL}/${id}/statut`, { statut }, {
+        const response = await axios.patch(`${VEHICULE_URL}/${id}/statut`, { statut }, {
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
-        console.error(`Error updating statut for vehicule ${id}:`, error.message);
+        if (error.response) {
+          console.error(`Error updating statut for vehicule ${id} (Service details):`, error.response.status, JSON.stringify(error.response.data));
+        } else {
+          console.error(`Error updating statut for vehicule ${id}:`, error.message);
+        }
         throw new Error('Failed to update vehicule statut');
       }
     },
     updateVehiculeKilometrage: async (_, { id, kilometrage }, { token }) => {
       try {
-        const response = await axios.patch(`${VEHICULE_SERVICE_URL}/${id}/kilometrage`, { kilometrage }, {
+        const response = await axios.patch(`${VEHICULE_URL}/${id}/kilometrage`, { kilometrage }, {
           headers: token ? { Authorization: token } : {}
         });
-        return response.data;
+        return mapToSnakeCase(response.data);
       } catch (error) {
-        console.error(`Error updating kilometrage for vehicule ${id}:`, error.message);
+        if (error.response) {
+          console.error(`Error updating kilometrage for vehicule ${id} (Service details):`, error.response.status, JSON.stringify(error.response.data));
+        } else {
+          console.error(`Error updating kilometrage for vehicule ${id}:`, error.message);
+        }
         throw new Error('Failed to update vehicule kilometrage');
       }
     },

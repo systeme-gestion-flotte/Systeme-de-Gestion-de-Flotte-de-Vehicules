@@ -1,12 +1,13 @@
 const axios = require('axios');
 
-const EVENEMENT_SERVICE_URL = process.env.EVENEMENT_SERVICE_URL || 'http://localhost:8003/api/evenements';
+const BASE_URL = process.env.EVENEMENT_SERVICE_URL || 'http://localhost:8003';
+const EVENEMENT_URL = `${BASE_URL}/api/evenements`;
 
 const evenementResolver = {
   Query: {
     evenements: async (_, params, { token }) => {
       try {
-        const response = await axios.get(EVENEMENT_SERVICE_URL, { 
+        const response = await axios.get(EVENEMENT_URL, { 
           params,
           headers: token ? { Authorization: token } : {}
         });
@@ -18,7 +19,7 @@ const evenementResolver = {
     },
     evenement: async (_, { id }, { token }) => {
       try {
-        const response = await axios.get(`${EVENEMENT_SERVICE_URL}/${id}`, {
+        const response = await axios.get(`${EVENEMENT_URL}/${id}`, {
           headers: token ? { Authorization: token } : {}
         });
         return response.data;
@@ -29,7 +30,7 @@ const evenementResolver = {
     },
     evenementsCritiques: async (_, __, { token }) => {
       try {
-        const response = await axios.get(`${EVENEMENT_SERVICE_URL}/critiques`, {
+        const response = await axios.get(`${EVENEMENT_URL}/critiques`, {
           headers: token ? { Authorization: token } : {}
         });
         return response.data;
@@ -40,7 +41,7 @@ const evenementResolver = {
     },
     statsEvenements: async (_, { depuis }, { token }) => {
       try {
-        const response = await axios.get(`${EVENEMENT_SERVICE_URL}/stats`, { 
+        const response = await axios.get(`${EVENEMENT_URL}/stats`, { 
           params: { depuis },
           headers: token ? { Authorization: token } : {}
         });
@@ -55,7 +56,7 @@ const evenementResolver = {
   Mutation: {
     acquitterEvenement: async (_, { id }, { token }) => {
       try {
-        const response = await axios.patch(`${EVENEMENT_SERVICE_URL}/${id}/acquitter`, null, {
+        const response = await axios.patch(`${EVENEMENT_URL}/${id}/acquitter`, null, {
           headers: token ? { Authorization: token } : {}
         });
         return response.data;

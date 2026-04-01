@@ -33,7 +33,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: any) {
     this.logger.debug(`JWT validated successfully for user: ${payload.preferred_username}`);
     const roles = payload?.realm_access?.roles || [];
-    const resourceRoles = payload?.resource_access?.['fleet-app']?.roles || [];
+    const azp = payload?.azp;
+    const resourceRoles = azp ? (payload?.resource_access?.[azp]?.roles || []) : [];
 
     return {
       userId: payload.sub,

@@ -496,6 +496,54 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids": [],
   "users": [
     {
+      "username": "admin-fleet",
+      "enabled": true,
+      "email": "admin@fleet.local",
+      "firstName": "Admin",
+      "lastName": "Flotte",
+      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
+      "realmRoles": ["admin", "default-roles-fleet-management"]
+    },
+    {
+      "username": "conducteur-fleet",
+      "enabled": true,
+      "email": "conducteur@fleet.local",
+      "firstName": "Jean",
+      "lastName": "Dupont",
+      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
+      "realmRoles": ["default-roles-fleet-management"]
+    },
+    {
+      "username": "manager-fleet",
+      "enabled": true,
+      "email": "manager@fleet.local",
+      "firstName": "Manager",
+      "lastName": "Flotte",
+      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
+      "realmRoles": ["manager", "default-roles-fleet-management"]
+    },
+    {
+      "username": "technicien-fleet",
+      "enabled": true,
+      "email": "tech@fleet.local",
+      "firstName": "Technicien",
+      "lastName": "Flotte",
+      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
+      "realmRoles": ["technicien", "default-roles-fleet-management"]
+    },
+    {
+      "username": "test",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
+      "realmRoles": ["default-roles-fleet-management"]
+    },
+    {
+      "username": "testuser",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
+      "realmRoles": ["default-roles-fleet-management"]
+    },
+    {
       "id": "1473e0ba-6b90-4288-a5c9-5088a3e4a403",
       "createdTimestamp": 1774694643047,
       "username": "service-account-driver-service",
@@ -913,9 +961,9 @@
       "consentRequired": false,
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
-      "publicClient": false,
+      "publicClient": true,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
@@ -925,6 +973,49 @@
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "foo",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        },
         {
           "id": "d6eea566-c7c1-4458-829f-586c2c38423a",
           "name": "Client ID",
@@ -1334,6 +1425,82 @@
     }
   ],
   "clientScopes": [
+    {
+      "name": "profile",
+      "description": "OpenID Connect built-in scope: profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "email",
+      "description": "OpenID Connect built-in scope: email",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "description": "OpenID Connect built-in scope: roles",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "foo",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
     {
       "id": "f4c206f9-0347-4fe7-b7d9-6b5c00555e77",
       "name": "offline_access",

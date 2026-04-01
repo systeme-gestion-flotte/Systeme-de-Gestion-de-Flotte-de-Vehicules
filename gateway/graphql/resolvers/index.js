@@ -19,6 +19,7 @@ const resolvers = {
     ...evenementResolver.Mutation,
     ...localisationResolver.Mutation,
   },
+  Assignation: conducteurResolver.Assignation,
 };
 
 module.exports = resolvers;

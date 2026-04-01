@@ -39,6 +39,8 @@ docker compose up -d --build
 | **Localisation Service**| 50051 | gRPC | Go |
 | **Grafana** | 3000 | [Dashboard](http://localhost:3000) | admin / admin |
 | **Jaeger** | 16686 | [UI Tracing](http://localhost:16686) | - |
+| **Kafka UI** | **8085** | Kafka UI | `http://localhost:8085` | Gestion visuelle des topics/messages |
+| Keycloak | `http://localhost:9080` | Serveur d'authentification (IAM) |
 
 ---
 
@@ -47,6 +49,7 @@ docker compose up -d --build
 Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le dossier `infrastructure/kubernetes`.
 
 👉 **[Voir le guide de déploiement Kubernetes](infrastructure/kubernetes/readme.md)**
+👉 **[Voir le guide d'authentification Keycloak](infrastructure/keycloak/readme.md)**
 
 ---
 
@@ -70,6 +73,11 @@ Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le 
 - **Saga Kafka** : Chorégraphie via Kafka — publication de `AssignationDemandee` et consommation de `VehiculeAssigneAvecSucces` / `EchecAssignationVehicule`.
 - **Validation métier** : Vérification automatique de la validité du permis avant toute assignation.
 - **Qualité** : Couverture Jest de **90%** (78 tests unitaires).
+
+### Semaine 5 : Optimisation Gateway & Kafka
+- **Kafka UI** : Ajout d'une interface web de gestion Kafka sur le port `8085`.
+- **GraphQL Resolvers** : Correction du mapping `camelCase` ↔ `snake_case` via un utilitaire centralisé.
+- **Fédération de données** : Implémentation des relations imbriquées (ex: `Assignation` -> `Vehicule`) au niveau de la gateway.
 
 ---
 

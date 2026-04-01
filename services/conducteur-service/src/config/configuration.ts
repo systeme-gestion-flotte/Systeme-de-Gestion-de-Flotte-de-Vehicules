@@ -8,7 +8,7 @@ export default () => ({
     groupId: process.env.KAFKA_GROUP_ID || 'conducteur-service-group',
     topics: {
       assignationDemandee: 'fleet.conducteurs.assignation',
-      vehiculesEvents: 'fleet.vehicules.events',
+      vehiculesEvents: 'vehicle-events',
     },
   },
   keycloak: {
