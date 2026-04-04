@@ -2,9 +2,17 @@ name: CI/CD - Fleet Management
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/maintenance-service
+      - feature/localisation_service
+      - feature/conducteur_service
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/maintenance-service
+      - feature/localisation_service
+      - feature/conducteur_service
 
 jobs:
   build:
