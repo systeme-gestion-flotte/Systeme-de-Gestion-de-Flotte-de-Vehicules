@@ -5,14 +5,14 @@ on:
     branches:
       - main
       - feature/maintenance-service
-      - feature/localisation_service
-      - feature/conducteur_service
+      - feature/localisation-service
+      - feature/conducteur-service
   pull_request:
     branches:
       - main
       - feature/maintenance-service
-      - feature/localisation_service
-      - feature/conducteur_service
+      - feature/localisation-service
+      - feature/conducteur-service
 
 jobs:
   build:
