@@ -9,7 +9,7 @@ export interface SimulatedPosition {
 }
 
 // Identifiants des véhicules simulés
-const VEHICULE_IDS = ['VEH-001', 'VEH-002', 'VEH-003', 'VEH-004', 'VEH-005'];
+const VEHICULE_IDS = ['550e8400-e29b-41d4-a716-446655440000', 'VEH-001', 'VEH-002', 'VEH-003', 'VEH-004', 'VEH-005'];
 
 // Position de départ : centre de Rouen
 const BASE_LAT = 49.443232;

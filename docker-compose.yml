@@ -111,7 +111,6 @@ services:
       context: ./services/vehicule-service
       dockerfile: Dockerfile
     container_name: fleet-vehicule-service
-    # Accessible sur localhost:8081
     ports:
       - "8081:4000" 
     environment:
@@ -121,7 +120,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KEYCLOAK_ISSUER_URI=http://localhost:9080/realms/fleet-management
       - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
-      - OTEL_SDK_DISABLED=true
+      - OTEL_SDK_DISABLED=false
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
@@ -189,10 +188,13 @@ services:
       dockerfile: Dockerfile
     container_name: fleet-localisation-service
     ports:
-      - "50051:50051" 
+      - "50051:50051"
+      - "3002:3002"
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@timescaledb:5432/localisation_db
       - KAFKA_BROKER=kafka:9092
+      - KEYCLOAK_ISSUER=http://fleet-keycloak:8080/realms/fleet-management
+      - ENABLE_SIMULATOR=true
     depends_on:
       - timescaledb
       - kafka
@@ -211,7 +213,7 @@ services:
       - CONDUCTEUR_SERVICE_URL=http://conducteur-service:3000
       - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000
       - EVENEMENT_SERVICE_URL=http://evenement-service:8000
-      - LOCALISATION_SERVICE_URL=http://localisation-service:50051
+      - LOCALISATION_SERVICE_URL=http://localisation-service:3002
     depends_on:
       - vehicule-service
       - conducteur-service

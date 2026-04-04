@@ -33,14 +33,13 @@ docker compose up -d --build
 | **GraphQL Gateway** | **4000** | [Apollo Sandbox](http://localhost:4000) | JWT requis |
 | **Keycloak** | 9080 | [Admin Console](http://localhost:9080) | admin / admin |
 | **Véhicule Service** | 8081 | REST / GraphQL | Java / Spring Boot |
-| **Conducteur Service** | 3000 | REST API | NestJS / TypeScript |
+| **Conducteur Service** | 3001 | REST API | NestJS / TypeScript |
 | **Maintenance Service** | **8002** | [FastAPI Docs](http://localhost:8002/docs) | Python / FastAPI |
 | **Événement Service** | 8003 | REST API | Python / FastAPI |
-| **Localisation Service**| 50051 | gRPC | Go |
-| **Grafana** | 3000 | [Dashboard](http://localhost:3000) | admin / admin |
+| **Localisation Service**| **3002** / 50051 | REST / gRPC | Node.js (TS) / TimescaleDB |
+| **Grafana** | 3101 | [Dashboard](http://localhost:3101) | admin / admin |
 | **Jaeger** | 16686 | [UI Tracing](http://localhost:16686) | - |
-| **Kafka UI** | **8085** | Kafka UI | `http://localhost:8085` | Gestion visuelle des topics/messages |
-| Keycloak | `http://localhost:9080` | Serveur d'authentification (IAM) |
+| **Kafka UI** | **8085** | [Kafka UI](http://localhost:8085) | Gestion visuelle des topics/messages |
 
 ---
 
@@ -79,6 +78,13 @@ Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le 
 - **GraphQL Resolvers** : Correction du mapping `camelCase` ↔ `snake_case` via un utilitaire centralisé.
 - **Fédération de données** : Implémentation des relations imbriquées (ex: `Assignation` -> `Vehicule`) au niveau de la gateway.
 
+### Semaine 6 : Observabilité, Sécurité & Localisation
+- **Observabilité** : Correction du crash de l'OTel Collector (migration `otlp`). Vérification de la stack Loki/Prometheus/Grafana.
+- **Localisation Service** : Refonte complète en **Node.js/TypeScript** avec stockage **TimescaleDB** (Hypertable).
+- **Sécurité** : Intégration de la validation de tokens **Keycloak JWT** directement dans le service de localisation.
+- **Fédération** : Synchronisation des chemins REST et implémentation des mutations (Positions, Zones) dans la Gateway.
+- **Qualité** : 100% de passage des tests unitaires (Geofencing & Simulateur).
+
 ---
 
 ## 5. Tests
@@ -90,4 +96,6 @@ cd services/vehicule-service && mvn test
 cd services/maintenance-service && pytest --cov=app
 # Node.js (conducteur-service)
 cd services/conducteur-service && npm run test:cov
+# Node.js (localisation-service)
+cd services/localisation-service && npm test
 ```

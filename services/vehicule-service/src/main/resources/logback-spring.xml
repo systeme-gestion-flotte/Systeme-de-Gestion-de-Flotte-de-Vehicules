@@ -21,6 +21,13 @@
         </encoder>
     </appender>
 
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.v1_0.OpenTelemetryAppender">
+        <captureExperimentalAttributes>true</captureExperimentalAttributes>
+        <captureCodeAttributes>true</captureCodeAttributes>
+        <captureMarkerAttribute>true</captureMarkerAttribute>
+        <captureKeyValuePairAttributes>true</captureKeyValuePairAttributes>
+    </appender>
+
     <!-- Niveaux de log par package -->
     <logger name="com.fleet" level="DEBUG"/>
     <logger name="org.springframework.kafka" level="INFO"/>
@@ -28,5 +35,6 @@
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="OTEL"/>
     </root>
 </configuration>
