@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mf-vehicule
+  namespace: fleet-management
+  labels:
+    app: mf-vehicule
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mf-vehicule
+  template:
+    metadata:
+      labels:
+        app: mf-vehicule
+    spec:
+      containers:
+        - name: mf-vehicule
+          image: leiti20/mf-vehicule:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"

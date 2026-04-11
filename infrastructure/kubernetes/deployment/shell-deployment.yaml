@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-shell
+  namespace: fleet-management
+  labels:
+    app: frontend-shell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-shell
+  template:
+    metadata:
+      labels:
+        app: frontend-shell
+    spec:
+      containers:
+        - name: frontend-shell
+          image: leiti20/frontend-shell:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"

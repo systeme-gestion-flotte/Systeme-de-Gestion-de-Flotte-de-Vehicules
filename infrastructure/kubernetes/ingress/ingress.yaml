@@ -44,3 +44,48 @@ spec:
                 name: localisation-service
                 port:
                   number: 50051
+    - host: app.fleet.local
+      http:
+        paths:
+          - path: /mf-vehicule
+            pathType: Prefix
+            backend:
+              service:
+                name: mf-vehicule
+                port:
+                  number: 80
+          - path: /mf-conducteur
+            pathType: Prefix
+            backend:
+              service:
+                name: mf-conducteur
+                port:
+                  number: 80
+          - path: /mf-maintenance
+            pathType: Prefix
+            backend:
+              service:
+                name: mf-maintenance
+                port:
+                  number: 80
+          - path: /mf-localisation
+            pathType: Prefix
+            backend:
+              service:
+                name: mf-localisation
+                port:
+                  number: 80
+          - path: /mf-evenement
+            pathType: Prefix
+            backend:
+              service:
+                name: mf-evenement
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-shell
+                port:
+                  number: 80

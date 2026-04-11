@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mf-evenement
+  namespace: fleet-management
+  labels:
+    app: mf-evenement
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mf-evenement
+  template:
+    metadata:
+      labels:
+        app: mf-evenement
+    spec:
+      containers:
+        - name: mf-evenement
+          image: leiti20/mf-evenement:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"

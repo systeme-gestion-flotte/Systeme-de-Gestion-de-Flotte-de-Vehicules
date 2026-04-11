@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mf-conducteur
+  namespace: fleet-management
+  labels:
+    app: mf-conducteur
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mf-conducteur
+  template:
+    metadata:
+      labels:
+        app: mf-conducteur
+    spec:
+      containers:
+        - name: mf-conducteur
+          image: leiti20/mf-conducteur:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
