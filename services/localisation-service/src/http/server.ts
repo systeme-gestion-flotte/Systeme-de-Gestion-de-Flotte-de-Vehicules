@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { getHistorique, getLastPosition, savePosition } from '../database/timescale';
-import { checkAuth } from './auth';
+import { checkAuth, checkRole } from './auth';
 import { ZONES, Zone } from '../geofencing/zones';
 import { randomUUID } from 'crypto';
 
@@ -100,7 +100,7 @@ app.post(['/api/positions', '/positions'], async (req: Request, res: Response) =
 });
 
 // Mutations Zones
-app.post(['/api/zones', '/zones'], (req: Request, res: Response) => {
+app.post(['/api/zones', '/zones'], checkRole(['admin', 'manager']), (req: Request, res: Response) => {
   const { nom, type, latitude_centre, longitude_centre, rayon_metres } = req.body;
 
   if (!nom || !type || latitude_centre === undefined || longitude_centre === undefined) {
@@ -129,7 +129,7 @@ app.post(['/api/zones', '/zones'], (req: Request, res: Response) => {
   res.status(201).json(newZone);
 });
 
-app.put(['/api/zones/:id', '/zones/:id'], (req: Request, res: Response) => {
+app.put(['/api/zones/:id', '/zones/:id'], checkRole(['admin', 'manager', 'technicien']), (req: Request, res: Response) => {
   const { id } = req.params;
   const { nom, type, latitude_centre, longitude_centre, rayon_metres } = req.body;
 
@@ -155,7 +155,7 @@ app.put(['/api/zones/:id', '/zones/:id'], (req: Request, res: Response) => {
   res.json(updatedZone);
 });
 
-app.delete(['/api/zones/:id', '/zones/:id'], (req: Request, res: Response) => {
+app.delete(['/api/zones/:id', '/zones/:id'], checkRole(['admin']), (req: Request, res: Response) => {
   const { id } = req.params;
   const index = ZONES.findIndex((z) => z.id === id);
   
@@ -167,11 +167,15 @@ app.delete(['/api/zones/:id', '/zones/:id'], (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: `Zone ${id} supprimée` });
 });
 
-export function startHttpServer(port: number): void {
-  app.listen(port, () => {
+import http from 'http';
+
+export function startHttpServer(port: number): http.Server {
+  const server = http.createServer(app);
+  server.listen(port, () => {
     console.log(`Serveur HTTP démarré sur le port ${port}`);
     console.log(`  GET /health`);
     console.log(`  GET /api/positions/:vehiculeId/historique?depuis=ISO&jusqu_a=ISO`);
     console.log(`  GET /api/positions/:vehiculeId/last`);
   });
+  return server;
 }

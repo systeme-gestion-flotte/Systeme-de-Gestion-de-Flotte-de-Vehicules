@@ -8,6 +8,9 @@ import { initKafkaProducer, publishGeofencingAlert, disconnectKafkaProducer } fr
 import { checkGeofencing } from './geofencing/zones';
 import { startHttpServer } from './http/server';
 import { startSimulator } from './simulator/gps-simulator';
+import { Server } from 'socket.io';
+
+let io: Server;
 
 // Initialisation OpenTelemetry en premier (avant tout import instrumenté)
 initTelemetry();
@@ -67,6 +70,17 @@ server.addService(localisationProto.LocalisationService.service, {
           });
         } else {
           call.write({ success: true, message: 'Position enregistrée' });
+        }
+
+        // 3. Broadcast temps réel via WebSocket
+        if (io) {
+          io.emit('position_update', {
+            vehicule_id: position.vehicule_id,
+            latitude: position.latitude,
+            longitude: position.longitude,
+            vitesse: position.vitesse,
+            horodatage: position.horodatage,
+          });
         }
 
         span.setStatus({ code: 1 /* OK */ });
@@ -134,14 +148,30 @@ async function main(): Promise<void> {
       console.log(`Service Localisation (gRPC) démarré sur le port ${portNumber}`);
     });
 
-    // Serveur HTTP REST (historique consultable)
+    // Serveur HTTP REST + WebSocket
     const httpPort = Number(process.env.HTTP_PORT || 3002);
-    startHttpServer(httpPort);
+    const httpServer = startHttpServer(httpPort);
+    
+    io = new Server(httpServer, {
+      cors: {
+        origin: '*', // À restreindre en prod
+      }
+    });
 
-    // Simulateur GPS (optionnel — activé via variable d'environnement)
+    io.on('connection', (socket) => {
+      console.log(`Client WebSocket connecté: ${socket.id}`);
+    });
+
+    // Simulateur GPS
     if (process.env.ENABLE_SIMULATOR === 'true') {
       startSimulator(async (position) => {
         await savePosition(position);
+        
+        // Broadcast simulator positions
+        if (io) {
+          io.emit('position_update', position);
+        }
+
         const geofencing = checkGeofencing(position.latitude, position.longitude);
         if (geofencing.violated && geofencing.zone) {
           await publishGeofencingAlert({

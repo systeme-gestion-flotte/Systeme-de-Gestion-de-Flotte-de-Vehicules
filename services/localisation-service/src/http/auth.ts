@@ -38,3 +38,21 @@ export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
     next();
   });
 };
+
+export const checkRole = (roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    if (!user) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const userRoles = user.realm_access?.roles || [];
+    const hasRole = roles.some(role => userRoles.includes(role));
+
+    if (!hasRole) {
+      return res.status(403).json({ error: `Forbidden: requires roles ${roles.join(' or ')}` });
+    }
+
+    next();
+  };
+};
