@@ -1,7 +1,7 @@
 {
   "id": "efafd0ec-25e8-4929-b46b-a3bb838f75d8",
   "realm": "fleet-management",
-  "displayName": "Système de Gestion de Flotte",
+  "displayName": "Syst\u00e8me de Gestion de Flotte",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
@@ -49,7 +49,7 @@
       {
         "id": "3811571b-cc80-4d04-bf5e-c54235a47eec",
         "name": "admin",
-        "description": "Administrateur — accès complet à toute la plateforme et gestion des droits",
+        "description": "Administrateur \u2014 acc\u00e8s complet \u00e0 toute la plateforme et gestion des droits",
         "composite": false,
         "clientRole": false,
         "containerId": "efafd0ec-25e8-4929-b46b-a3bb838f75d8",
@@ -67,7 +67,7 @@
       {
         "id": "d90f98de-6806-43cb-a7e6-bfca3e02f15d",
         "name": "technicien",
-        "description": "Technicien — consulte et met à jour le statut des interventions de maintenance",
+        "description": "Technicien \u2014 consulte et met \u00e0 jour le statut des interventions de maintenance",
         "composite": false,
         "clientRole": false,
         "containerId": "efafd0ec-25e8-4929-b46b-a3bb838f75d8",
@@ -76,7 +76,7 @@
       {
         "id": "ab0bf86a-c7b5-4990-9b57-1cb5bd36de19",
         "name": "manager",
-        "description": "Manager — supervise la flotte, les conducteurs et les alertes",
+        "description": "Manager \u2014 supervise la flotte, les conducteurs et les alertes",
         "composite": false,
         "clientRole": false,
         "containerId": "efafd0ec-25e8-4929-b46b-a3bb838f75d8",
@@ -115,7 +115,7 @@
       {
         "id": "1d759abf-ca14-4a3d-be5f-c0acc4bdae0b",
         "name": "utilisateur",
-        "description": "Conducteur / Utilisateur — consulte ses assignations et utilise les véhicules",
+        "description": "Conducteur / Utilisateur \u2014 consulte ses assignations et utilise les v\u00e9hicules",
         "composite": false,
         "clientRole": false,
         "containerId": "efafd0ec-25e8-4929-b46b-a3bb838f75d8",
@@ -501,8 +501,17 @@
       "email": "admin@fleet.local",
       "firstName": "Admin",
       "lastName": "Flotte",
-      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
-      "realmRoles": ["admin", "default-roles-fleet-management"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin",
+        "default-roles-fleet-management"
+      ]
     },
     {
       "username": "conducteur-fleet",
@@ -510,8 +519,16 @@
       "email": "conducteur@fleet.local",
       "firstName": "Jean",
       "lastName": "Dupont",
-      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
-      "realmRoles": ["default-roles-fleet-management"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-fleet-management"
+      ]
     },
     {
       "username": "manager-fleet",
@@ -519,8 +536,17 @@
       "email": "manager@fleet.local",
       "firstName": "Manager",
       "lastName": "Flotte",
-      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
-      "realmRoles": ["manager", "default-roles-fleet-management"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "manager",
+        "default-roles-fleet-management"
+      ]
     },
     {
       "username": "technicien-fleet",
@@ -528,20 +554,45 @@
       "email": "tech@fleet.local",
       "firstName": "Technicien",
       "lastName": "Flotte",
-      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
-      "realmRoles": ["technicien", "default-roles-fleet-management"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "technicien",
+        "default-roles-fleet-management"
+      ]
     },
     {
       "username": "test",
       "enabled": true,
-      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
-      "realmRoles": ["default-roles-fleet-management"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-fleet-management"
+      ]
     },
     {
       "username": "testuser",
       "enabled": true,
-      "credentials": [{ "type": "password", "value": "Admin1234!", "temporary": false }],
-      "realmRoles": ["default-roles-fleet-management"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-fleet-management"
+      ]
     },
     {
       "id": "1473e0ba-6b90-4288-a5c9-5088a3e4a403",
@@ -871,7 +922,7 @@
     {
       "id": "5001f6f2-282f-407a-8275-000ec3ff4058",
       "clientId": "event-service",
-      "name": "Service Événements",
+      "name": "Service \u00c9v\u00e9nements",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -954,8 +1005,12 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
-      "redirectUris": [],
-      "webOrigins": [],
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -1076,12 +1131,10 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:3000/*",
-        "http://localhost:5173/*"
+        "*"
       ],
       "webOrigins": [
-        "http://localhost:3000",
-        "http://localhost:5173"
+        "*"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -1349,7 +1402,7 @@
     {
       "id": "fdfa9538-bd51-41a6-a770-54415a10b873",
       "clientId": "vehicle-service",
-      "name": "Service Véhicules",
+      "name": "Service V\u00e9hicules",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
