@@ -3,12 +3,12 @@ import Keycloak from 'keycloak-js';
 const keycloakConfig = {
   url: 'http://localhost:9080',
   realm: 'fleet-management',
-  clientId: 'fleet-api-gateway',
+  clientId: 'fleet-frontend',
 };
 
 const keycloak = new Keycloak(keycloakConfig);
 
-export const initKeycloak = (onAuthenticatedCallback: () => void) => {
+export const initKeycloak = (onAuthenticatedCallback: () => void, onErrorCallback?: (error: any) => void) => {
   keycloak
     .init({
       onLoad: 'login-required',
@@ -22,7 +22,8 @@ export const initKeycloak = (onAuthenticatedCallback: () => void) => {
       onAuthenticatedCallback();
     })
     .catch((error) => {
-      console.error('Erreur lors de l\'initialisation de Keycloak:', error);
+      console.error('Erreur init Keycloak:', error);
+      if (onErrorCallback) onErrorCallback(error);
     });
 };
 
