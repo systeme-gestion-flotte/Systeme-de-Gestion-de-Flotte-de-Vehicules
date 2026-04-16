@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Car, Users, Wrench, MapPin, LogOut } from 'lucide-react';
 import keycloak from './auth';
@@ -10,6 +11,7 @@ import Localisation from './pages/Localisation';
 import Maintenance  from './pages/Maintenance';
 import Unauthorized from './pages/Unauthorized';
 import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
 
 function getRoleLabel(): string {
   if (keycloak.hasRealmRole('admin'))      return 'Administrateur';
@@ -19,6 +21,13 @@ function getRoleLabel(): string {
 }
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(keycloak.authenticated ?? false);
+
+  // Affiche la page de connexion personnalisée si l'utilisateur n'est pas authentifié
+  if (!authenticated) {
+    return <Login onLogin={() => setAuthenticated(true)} />;
+  }
+
   const logout = () => keycloak.logout();
   const username = keycloak.tokenParsed?.preferred_username ?? '';
 
