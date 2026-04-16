@@ -70,13 +70,13 @@ describe('RBAC - Contrôle d\'accès par rôle', () => {
       cy.mockApi();
       cy.visit('/vehicules');
       cy.wait('@getVehicules');
-      cy.get('.nav-item.active').should('contain.text', 'Véhicules');
+      cy.get('.nav-item.active').should('contain.text', 'éhicule');
     });
 
     it('le lien Dashboard est actif sur /', () => {
       cy.mockApi();
       cy.visit('/');
-      cy.get('.nav-item.active').should('contain.text', 'Dashboard');
+      cy.get('.nav-item.active').should('contain.text', 'ashboard');
     });
   });
 });

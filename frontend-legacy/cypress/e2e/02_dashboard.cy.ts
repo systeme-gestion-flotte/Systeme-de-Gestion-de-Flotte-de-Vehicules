@@ -4,12 +4,13 @@
  */
 describe('Dashboard', () => {
   beforeEach(() => {
+    cy.login('admin');
     cy.mockApi();
     cy.visit('/');
   });
 
   it('affiche la page dashboard avec le titre', () => {
-    cy.contains('Dashboard').should('be.visible');
+    cy.contains(/dashboard/i).should('be.visible');
   });
 
   it('affiche les cartes de statistiques (KPI)', () => {

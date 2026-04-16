@@ -12,11 +12,11 @@ describe('Authentification & Navigation', () => {
     cy.get('.sidebar').should('be.visible');
     cy.contains('FleetX').should('be.visible');
     cy.get('.sidebar-nav').within(() => {
-      cy.contains('Dashboard').should('be.visible');
-      cy.contains('Véhicules').should('be.visible');
-      cy.contains('Conducteurs').should('be.visible');
-      cy.contains('Localisation').should('be.visible');
-      cy.contains('Maintenance').should('be.visible');
+      cy.contains(/dashboard/i).should('be.visible');
+      cy.contains(/véhicules/i).should('be.visible');
+      cy.contains(/conducteurs/i).should('be.visible');
+      cy.contains(/localisation/i).should('be.visible');
+      cy.contains(/maintenance/i).should('be.visible');
     });
   });
 
@@ -34,22 +34,22 @@ describe('Authentification & Navigation', () => {
   });
 
   it('navigue vers /vehicules au clic', () => {
-    cy.contains('Véhicules').click();
+    cy.contains(/véhicules/i).click();
     cy.url().should('include', '/vehicules');
   });
 
   it('navigue vers /conducteurs au clic', () => {
-    cy.contains('Conducteurs').click();
+    cy.contains(/conducteurs/i).click();
     cy.url().should('include', '/conducteurs');
   });
 
   it('navigue vers /localisation au clic', () => {
-    cy.contains('Localisation').click();
+    cy.contains(/localisation/i).click();
     cy.url().should('include', '/localisation');
   });
 
   it('navigue vers /maintenance au clic', () => {
-    cy.contains('Maintenance').click();
+    cy.contains(/maintenance/i).click();
     cy.url().should('include', '/maintenance');
   });
 });

@@ -4,6 +4,7 @@
  */
 describe('Composant StatusBadge', () => {
   beforeEach(() => {
+    cy.login('utilisateur');
     cy.mockApi();
     cy.visit('/vehicules');
     cy.wait('@getVehicules');

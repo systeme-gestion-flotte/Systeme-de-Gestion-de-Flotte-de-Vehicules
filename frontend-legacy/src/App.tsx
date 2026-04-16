@@ -152,7 +152,7 @@ function App() {
                 <span className="user-name">{username}</span>
                 <span className="user-role">{getRoleLabel()}</span>
               </div>
-              <div className="avatar">
+              <div className="avatar" data-testid="user-avatar">
                 {username.charAt(0).toUpperCase()}
               </div>
             </div>

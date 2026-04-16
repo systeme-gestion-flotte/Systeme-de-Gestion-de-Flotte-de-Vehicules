@@ -3,6 +3,7 @@
  */
 describe('Gestion des Véhicules', () => {
   beforeEach(() => {
+    cy.login('admin');
     cy.mockApi();
     cy.visit('/vehicules');
     cy.wait('@getVehicules');

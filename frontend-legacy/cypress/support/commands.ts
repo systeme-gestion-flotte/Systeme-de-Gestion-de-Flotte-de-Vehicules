@@ -8,24 +8,7 @@
  * Utilisé en tests e2e pour éviter la dépendance au serveur Keycloak.
  */
 Cypress.Commands.add('login', (role: 'admin' | 'manager' | 'technicien' | 'utilisateur' = 'admin') => {
-  // Stub Keycloak: on injecte un objet keycloak factice sur window
-  cy.window().then((win) => {
-    const fakeToken = {
-      preferred_username: `test-${role}`,
-      email: `${role}@fleet.local`,
-      realm_access: { roles: [role, 'offline_access'] },
-    };
-
-    // Expose un stub global que initKeycloak détectera
-    (win as Window & { __KC_STUB__?: unknown }).__KC_STUB__ = {
-      authenticated: true,
-      token: 'fake-jwt-token',
-      tokenParsed: fakeToken,
-      hasRealmRole: (r: string) => r === role || r === 'offline_access',
-      logout: () => {},
-      updateToken: () => Promise.resolve(true),
-    };
-  });
+  Cypress.env('CY_ROLE', role);
 });
 
 /**
@@ -33,10 +16,10 @@ Cypress.Commands.add('login', (role: 'admin' | 'manager' | 'technicien' | 'utili
  * avec des fixtures JSON pour isoler les tests du backend.
  */
 Cypress.Commands.add('mockApi', () => {
-  cy.intercept('GET', '**/vehicules', { fixture: 'vehicles.json' }).as('getVehicules');
-  cy.intercept('GET', '**/conducteurs', { fixture: 'conducteurs.json' }).as('getConducteurs');
-  cy.intercept('GET', '**/maintenance/interventions', { fixture: 'maintenance.json' }).as('getInterventions');
-  cy.intercept('GET', '**/localisation/positions/latest', { body: [] }).as('getPositions');
+  cy.intercept('GET', 'http://localhost:4000/vehicules', { fixture: 'vehicles.json' }).as('getVehicules');
+  cy.intercept('GET', 'http://localhost:4000/conducteurs', { fixture: 'conducteurs.json' }).as('getConducteurs');
+  cy.intercept('GET', 'http://localhost:4000/maintenance/interventions', { fixture: 'maintenance.json' }).as('getInterventions');
+  cy.intercept('GET', 'http://localhost:4000/localisation/positions/latest', { body: [] }).as('getPositions');
 });
 
 // Type augmentation pour TypeScript

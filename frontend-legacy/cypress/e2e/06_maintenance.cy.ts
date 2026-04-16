@@ -3,6 +3,7 @@
  */
 describe('Gestion Maintenance', () => {
   beforeEach(() => {
+    cy.login('admin');
     cy.mockApi();
     cy.visit('/maintenance');
     cy.wait('@getInterventions');

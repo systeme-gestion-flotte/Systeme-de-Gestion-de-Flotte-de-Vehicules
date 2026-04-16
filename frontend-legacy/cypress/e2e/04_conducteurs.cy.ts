@@ -3,6 +3,7 @@
  */
 describe('Gestion des Conducteurs', () => {
   beforeEach(() => {
+    cy.login('admin');
     cy.mockApi();
     cy.visit('/conducteurs');
     cy.wait('@getConducteurs');

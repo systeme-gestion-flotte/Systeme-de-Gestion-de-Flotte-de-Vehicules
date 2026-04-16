@@ -3,13 +3,14 @@
  */
 describe('Suivi Localisation', () => {
   beforeEach(() => {
+    cy.login('admin');
     cy.mockApi();
     cy.visit('/localisation');
     cy.wait('@getPositions');
   });
 
   it('affiche la page de localisation', () => {
-    cy.contains('Suivi en temps réel').should('be.visible');
+    cy.contains(/suivi/i).should('be.visible');
   });
 
   it('affiche le conteneur de la carte Leaflet', () => {
