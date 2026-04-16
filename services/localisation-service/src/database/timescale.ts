@@ -96,3 +96,22 @@ export async function getLastPosition(vehiculeId: string): Promise<{
   );
   return result.rows[0] ?? null;
 }
+export async function getLatestAllPositions(): Promise<Array<{
+  vehicule_id: string;
+  latitude: number;
+  longitude: number;
+  vitesse: number;
+  horodatage: string;
+}>> {
+  const result = await pool.query(
+    `SELECT DISTINCT ON (vehicule_id)
+            vehicule_id,
+            latitude,
+            longitude,
+            vitesse,
+            horodatage::text AS horodatage
+     FROM   positions
+     ORDER  BY vehicule_id, horodatage DESC`
+  );
+  return result.rows;
+}

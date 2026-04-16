@@ -14,6 +14,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./config/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleet-network
+
+  db-seeder:
+    build:
+      context: ./infra/seeder
+      dockerfile: Dockerfile
+    container_name: fleet-db-seeder
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - fleet-network
 
@@ -119,8 +135,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=adminpassword
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KEYCLOAK_ISSUER_URI=http://localhost:9080/realms/fleet-management
-      - KEYCLOAK_JWK_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
-      - OTEL_SDK_DISABLED=false
+      - KEYCLOAK_JWK_URI=http://fleet-keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
+      - OTEL_SDK_DISABLED=true
+      - OTEL_JAVAAGENT_ENABLED=false
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
@@ -139,7 +156,7 @@ services:
       - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/conducteurs
       - KAFKA_BROKER=kafka:9092
       - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
-      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
+      - KEYCLOAK_JWKS_URI=http://fleet-keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
     depends_on:
       - postgres
       - kafka
@@ -193,7 +210,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@timescaledb:5432/localisation_db
       - KAFKA_BROKER=kafka:9092
-      - KEYCLOAK_ISSUER=http://fleet-keycloak:8080/realms/fleet-management
+      - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
+      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
       - ENABLE_SIMULATOR=true
     depends_on:
       - timescaledb
@@ -221,14 +239,12 @@ services:
       - evenement-service
       - localisation-service
       - keycloak
-    volumes:
-      - ./gateway:/app
     networks:
       - fleet-network
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend-legacy
       dockerfile: Dockerfile
     container_name: fleet-frontend
     ports:
@@ -237,7 +253,7 @@ services:
       - VITE_KEYCLOAK_URL=http://localhost:9080
     depends_on:
       - api-gateway
-      - localisation-service # for websocket
+      - localisation-service
     networks:
       - fleet-network
 

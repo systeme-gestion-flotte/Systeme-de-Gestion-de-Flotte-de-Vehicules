@@ -58,6 +58,58 @@ body {
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.role-badge-sidebar {
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-glass);
+}
+
+.role-badge-sidebar.admin {
+  background: rgba(67, 56, 202, 0.2);
+  color: #818cf8;
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+.role-badge-sidebar.manager {
+  background: rgba(30, 64, 175, 0.2);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.role-badge-sidebar.technicien {
+  background: rgba(146, 64, 14, 0.2);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.role-badge-sidebar.conducteur {
+  background: rgba(6, 95, 70, 0.2);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.nav-separator {
+  margin: 1.5rem 0 0.5rem 0;
+  padding: 0 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.nav-item.common {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -74,6 +126,28 @@ body {
   text-decoration: none;
   border-radius: 10px;
   transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.sidebar-nav.scrollable {
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+  padding-right: 5px;
+}
+
+.sidebar-nav.scrollable::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav.scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.nav-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-item:hover {
@@ -191,6 +265,7 @@ body {
   margin-bottom: 0.5rem;
   background: linear-gradient(to right, #fff, #94a3b8);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

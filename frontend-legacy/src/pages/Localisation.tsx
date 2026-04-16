@@ -72,8 +72,19 @@ export default function Localisation() {
 
   // Charger les dernières positions via REST
   useEffect(() => {
-    api.get<VehiculePosition[]>('/localisation/positions/latest')
-      .then(({ data }) => setPositions(data))
+    api.get<any[]>('/localisation/positions/latest')
+      .then(({ data }) => {
+        const mapped = data.map(p => ({
+          vehiculeId: p.vehicule_id,
+          immatriculation: p.vehicule_id, // fallback si on n'a pas joint le nom
+          statut: 'EN_COURSE',
+          latitude: p.latitude,
+          longitude: p.longitude,
+          vitesse: p.vitesse,
+          timestamp: p.horodatage
+        }));
+        setPositions(mapped);
+      })
       .catch(() => {}); // silently ignore if endpoint not ready
   }, []);
 
@@ -88,15 +99,24 @@ export default function Localisation() {
     socket.on('connect',    () => setConnected(true));
     socket.on('disconnect', () => setConnected(false));
 
-    socket.on('position_update', (data: VehiculePosition) => {
+    socket.on('position_update', (data: any) => {
+      const mapped: VehiculePosition = {
+        vehiculeId: data.vehicule_id,
+        immatriculation: data.vehicule_id,
+        statut: 'EN_COURSE',
+        latitude: data.latitude,
+        longitude: data.longitude,
+        vitesse: data.vitesse,
+        timestamp: data.horodatage
+      };
       setPositions(prev => {
-        const idx = prev.findIndex(p => p.vehiculeId === data.vehiculeId);
+        const idx = prev.findIndex(p => p.vehiculeId === mapped.vehiculeId);
         if (idx >= 0) {
           const next = [...prev];
-          next[idx] = data;
+          next[idx] = mapped;
           return next;
         }
-        return [...prev, data];
+        return [...prev, mapped];
       });
     });
 

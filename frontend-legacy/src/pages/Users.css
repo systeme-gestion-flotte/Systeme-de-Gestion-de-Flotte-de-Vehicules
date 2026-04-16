@@ -1,0 +1,140 @@
+.users-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  margin: 2rem 0;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #6366f1;
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.search-input-wrapper input {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.8rem 1rem;
+  width: 100%;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.search-input-wrapper svg {
+  color: #64748b;
+}
+
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.user-card {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.user-card:hover {
+  transform: translateY(-4px);
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.user-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: white;
+  margin-bottom: 1.2rem;
+}
+
+.user-details h3 {
+  margin: 0 0 0.8rem 0;
+  font-size: 1.15rem;
+  color: white;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.user-roles {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-badge.admin { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.role-badge.manager { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.role-badge.technicien { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.role-badge.utilisateur { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+.btn-more {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+}
+
+.btn-more:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  color: #64748b;
+  font-style: italic;
+}

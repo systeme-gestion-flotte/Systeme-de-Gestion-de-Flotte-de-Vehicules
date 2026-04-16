@@ -2,11 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
-const KEYCLOAK_URL = process.env.KEYCLOAK_ISSUER || 'http://localhost:9080/realms/fleet-management';
-const JWKS_URI = `${KEYCLOAK_URL}/protocol/openid-connect/certs`;
+const KEYCLOAK_ISSUER = process.env.KEYCLOAK_ISSUER || 'http://localhost:9080/realms/fleet-management';
+// Use dedicated JWKS URI env var if available (allows separate internal vs external URL)
+const JWKS_URI = process.env.KEYCLOAK_JWKS_URI || `${KEYCLOAK_ISSUER}/protocol/openid-connect/certs`;
+
+console.log(`[Auth] Using JWKS URI: ${JWKS_URI}`);
 
 const client = jwksClient({
   jwksUri: JWKS_URI,
+  cache: true,
+  cacheMaxAge: 600000, // 10 minutes
 });
 
 function getKey(header: any, callback: any) {

@@ -45,9 +45,30 @@ export default function Conducteurs() {
   const fetchConducteurs = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const { data } = await api.get<Conducteur[]>('/conducteurs');
-      setConducteurs(data);
-    } catch {
+      const resp = await api.get<any>('/conducteurs');
+      let rawData = [];
+      if (resp.data) {
+        if (Array.isArray(resp.data)) {
+          rawData = resp.data;
+        } else if (resp.data.data && Array.isArray(resp.data.data)) {
+          rawData = resp.data.data;
+        }
+      }
+
+      const mapped = rawData.map(c => ({
+        id: String(c.id_conducteur || c.id || Math.random()),
+        nom: c.nom || 'Inconnu',
+        prenom: c.prenom || 'Inconnu',
+        email: c.email || '—',
+        telephone: c.telephone || '—',
+        numeroPemis: c.numero_permis || c.numeroPemis || '—',
+        categoriePemis: c.categorie_permis || c.categoriePemis || 'B',
+        dateExpirationPemis: c.date_expiration_permis || c.dateExpirationPemis || '',
+        actif: c.actif !== undefined ? c.actif : true
+      }));
+      setConducteurs(mapped);
+    } catch (err) {
+      console.error('Fetch conducteurs error:', err);
       setError('Impossible de charger les conducteurs.');
     } finally {
       setLoading(false);

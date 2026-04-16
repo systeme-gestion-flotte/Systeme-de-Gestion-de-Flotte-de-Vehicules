@@ -48,9 +48,32 @@ export default function Maintenance() {
   const fetchInterventions = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const { data } = await api.get<Intervention[]>('/maintenance/interventions');
-      setInterventions(data);
-    } catch {
+      const resp = await api.get<any>('/maintenance/interventions');
+      // Pour FastAPI qui renvoie {data: [], total: 0} ou simplement []
+      let rawData = [];
+      if (resp.data) {
+        if (Array.isArray(resp.data)) {
+          rawData = resp.data;
+        } else if (resp.data.data && Array.isArray(resp.data.data)) {
+          rawData = resp.data.data;
+        }
+      }
+      
+      const mapped = rawData.map((i: any) => ({
+        id: String(i.id_intervention || i.id || Math.random()),
+        vehiculeId: String(i.vehicule_id || i.vehiculeId || 'Inconnu'),
+        immatriculation: i.immatriculation || i.vehicule_immat || '—',
+        typeIntervention: i.type_intervention || i.typeIntervention || 'AUTRE',
+        description: i.description || '',
+        dateDebut: i.date_debut || i.date_planifiee || i.dateDebut || new Date().toISOString(),
+        dateFin: i.date_fin || i.dateFin,
+        statut: (i.statut || 'PLANIFIEE').toUpperCase(),
+        technicienId: i.technicien_id || i.technicienId,
+        cout: i.cout ? Number(i.cout) : 0
+      }));
+      setInterventions(mapped);
+    } catch (err) {
+      console.error('Fetch interventions error:', err);
       setError('Impossible de charger les interventions.');
     } finally {
       setLoading(false);
@@ -200,11 +223,22 @@ function InterventionCard({ intervention: i, onChangeStatut, canWrite }: {
   onChangeStatut: (id: string, statut: string) => void;
   canWrite: boolean;
 }) {
+  const formatDate = (dateStr: string) => {
+    try {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'Date invalide';
+      return d.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+    } catch {
+      return 'Erreur date';
+    }
+  };
+
   return (
     <div className="intervention-card" data-testid={`intervention-card-${i.id}`}>
       <div className="intervention-header">
         <div className="intervention-meta">
-          <span className="intervention-type">{i.typeIntervention.replace('_', ' ')}</span>
+          <span className="intervention-type">{(i.typeIntervention || 'AUTRE').replace('_', ' ')}</span>
           <StatusBadge status={i.statut} />
         </div>
         {canWrite && (
@@ -233,9 +267,9 @@ function InterventionCard({ intervention: i, onChangeStatut, canWrite }: {
       <p className="intervention-desc">{i.description || <em style={{ color: '#64748b' }}>Aucune description</em>}</p>
       <div className="intervention-footer">
         {i.immatriculation && <span className="immat-tag">{i.immatriculation}</span>}
-        <span className="date-tag">Début : {new Date(i.dateDebut).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>
-        {i.dateFin && <span className="date-tag">Fin : {new Date(i.dateFin).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>}
-        {i.cout != null && <span className="cost-tag">{i.cout.toFixed(2)} €</span>}
+        <span className="date-tag">Début : {formatDate(i.dateDebut)}</span>
+        {i.dateFin && <span className="date-tag">Fin : {formatDate(i.dateFin)}</span>}
+        {i.cout != null && <span className="cost-tag">{Number(i.cout).toFixed(2)} €</span>}
       </div>
     </div>
   );

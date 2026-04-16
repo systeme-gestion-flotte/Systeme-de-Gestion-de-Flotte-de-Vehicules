@@ -13,6 +13,14 @@ export const initKeycloak = (
   onReady: () => void,
   onErrorCallback?: (error: unknown) => void,
 ) => {
+  // MODE TEST : si un stub Cypress est injecté, on l'utilise directement
+  const stub = (window as any).__KC_STUB__;
+  if (stub) {
+    Object.assign(keycloak, stub);
+    onReady();
+    return;
+  }
+
   keycloak
     .init({
       onLoad: 'check-sso',
@@ -80,11 +88,17 @@ export const loginWithCredentials = async (
 
   // Injecte les tokens dans l'instance Keycloak pour que le reste de l'app
   // fonctionne normalement (keycloak.token, keycloak.hasRealmRole, etc.)
-  (keycloak as unknown as Record<string, unknown>).authenticated = true;
-  keycloak.token        = data.access_token;
-  keycloak.refreshToken = data.refresh_token;
-  keycloak.idToken      = data.id_token;
-  keycloak.tokenParsed  = parseJwt(data.access_token) as Keycloak['tokenParsed'];
+  const parsedToken = parseJwt(data.access_token) as any;
+  
+  (keycloak as any).authenticated = true;
+  keycloak.token         = data.access_token;
+  keycloak.refreshToken  = data.refresh_token;
+  keycloak.idToken       = data.id_token;
+  keycloak.tokenParsed   = parsedToken;
+  
+  // Crucial : Mettre à jour les propriétés de rôle utilisées par keycloak-js
+  keycloak.realmAccess   = parsedToken.realm_access;
+  keycloak.resourceAccess = parsedToken.resource_access;
 };
 
 export default keycloak;

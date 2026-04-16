@@ -99,3 +99,48 @@ cd services/conducteur-service && npm run test:cov
 # Node.js (localisation-service)
 cd services/localisation-service && npm test
 ```
+
+---
+
+## 6. Déploiement & Démarrage Rapide
+
+Le projet est configuré pour un déploiement "clés en main" (Turnkey). Une seule commande suffit pour lancer l'infrastructure, les 6 microservices, le frontend et peupler les bases de données.
+
+### Installation
+```bash
+# Clonez le projet
+git clone <url-du-repo>
+cd Systeme-de-Gestion-de-Flotte-de-Vehicules
+
+# Lancez l'ensemble du projet
+docker compose up -d --build
+```
+
+### Accès Application
+
+Une fois le déploiement terminé, l'application est accessible à l'URL suivante :
+👉 **[http://localhost:5173](http://localhost:5173)**
+
+#### Utilisateurs de test (Keycloak)
+Connectez-vous avec les identifiants suivants pour tester les différents niveaux d'accès (RBAC) :
+
+| Rôle | Nom d'utilisateur | Mot de passe | Description |
+| :--- | :--- | :--- | :--- |
+| **Administrateur** | `admin-fleet` | `Admin1234!` | Accès total (Véhicules, Conducteurs, Maintenance, Utilisateurs) |
+| **Manager** | `manager-fleet` | `manager1234!` | Gestion de la flotte et des utilisateurs |
+| **Technicien** | `technicien-fleet` | `technicien1234!` | Gestion de la maintenance et lecture flotte |
+| **Conducteur** | `conducteur-fleet` | `conducteur1234!` | Consultation profil et alertes |
+
+### Automatisation (Seeding)
+Le service `db-seeder` s'exécute automatiquement au démarrage. Il attend que Postgres soit prêt puis injecte les données de test dans toutes les bases (`vehicules`, `conducteurs`, `maintenance`, `evenements`).
+- **Logs du seeding** : `docker logs fleet-db-seeder`
+- **Réinitialisation** : Pour repartir de zéro avec une base propre : `docker compose down -v && docker compose up -d --build`
+
+### Vérification
+Une fois le déploiement terminé :
+1.  Accédez au **Frontend** : [http://localhost:5173](http://localhost:5173) (Connectez-vous avec `admin/admin` ou `manager/manager`).
+2.  Accédez à la **Gateway API** : [http://localhost:4000](http://localhost:4000).
+3.  Vérifiez les **Logs** : `docker logs -f fleet-api-gateway` pour suivre les requêtes entre les services.
+
+---
+© 2026 Fleet Management System - M1 GIL University

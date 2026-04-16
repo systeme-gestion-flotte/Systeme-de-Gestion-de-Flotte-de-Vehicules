@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getHistorique, getLastPosition, savePosition } from '../database/timescale';
+import { getHistorique, getLastPosition, savePosition, getLatestAllPositions } from '../database/timescale';
 import { checkAuth, checkRole } from './auth';
 import { ZONES, Zone } from '../geofencing/zones';
 import { randomUUID } from 'crypto';
@@ -61,6 +61,17 @@ const getLastPositionHandler = async (req: Request, res: Response) => {
 
 app.get('/api/positions/:vehiculeId/last', getLastPositionHandler);
 app.get('/positions/:vehicule_id/derniere', getLastPositionHandler);
+
+// ── Latest positions pour TOUS les véhicules (utilisé par la gateway/front) ──
+app.get(['/api/positions/latest', '/positions/latest'], async (req: Request, res: Response) => {
+  try {
+    const positions = await getLatestAllPositions();
+    res.json(positions);
+  } catch (err: any) {
+    console.error('Erreur récupération latest positions:', err.message);
+    res.status(500).json({ error: 'Erreur interne' });
+  }
+});
 
 // ── Gestion des Zones (Géofencing) ─────────────────────────────────────────────
 // GET /zones

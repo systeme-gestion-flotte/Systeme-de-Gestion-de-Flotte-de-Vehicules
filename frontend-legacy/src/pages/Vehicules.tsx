@@ -47,9 +47,29 @@ export default function Vehicules() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get<Vehicule[]>('/vehicules');
-      setVehicules(data);
-    } catch {
+      const resp = await api.get<any>('/vehicules');
+      // Pour Java qui renvoie parfois un objet enveloppe ou simplement []
+      let rawData = [];
+      if (resp.data) {
+        if (Array.isArray(resp.data)) {
+          rawData = resp.data;
+        } else if (resp.data.data && Array.isArray(resp.data.data)) {
+          rawData = resp.data.data;
+        }
+      }
+
+      const mapped = rawData.map(v => ({
+        id: String(v.id_vehicule || v.id || Math.random()),
+        immatriculation: v.immatriculation || '—',
+        marque: v.marque || '—',
+        modele: v.modele || '—',
+        annee: v.annee || new Date().getFullYear(),
+        statut: (v.statut || 'DISPONIBLE').toUpperCase(),
+        actif: v.actif !== undefined ? v.actif : true
+      }));
+      setVehicules(mapped);
+    } catch (err) {
+      console.error('Fetch Vehicles Error:', err);
       setError('Impossible de charger les véhicules.');
     } finally {
       setLoading(false);
