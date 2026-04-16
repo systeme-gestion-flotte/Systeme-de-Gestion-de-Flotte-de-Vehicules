@@ -1,0 +1,38 @@
+[
+  {
+    "id": "veh-001",
+    "immatriculation": "AB-123-CD",
+    "marque": "Renault",
+    "modele": "Clio",
+    "annee": 2021,
+    "statut": "DISPONIBLE",
+    "actif": true
+  },
+  {
+    "id": "veh-002",
+    "immatriculation": "EF-456-GH",
+    "marque": "Peugeot",
+    "modele": "208",
+    "annee": 2022,
+    "statut": "EN_COURSE",
+    "actif": true
+  },
+  {
+    "id": "veh-003",
+    "immatriculation": "IJ-789-KL",
+    "marque": "Citroën",
+    "modele": "C3",
+    "annee": 2020,
+    "statut": "EN_MAINTENANCE",
+    "actif": true
+  },
+  {
+    "id": "veh-004",
+    "immatriculation": "MN-012-OP",
+    "marque": "Ford",
+    "modele": "Transit",
+    "annee": 2019,
+    "statut": "DISPONIBLE",
+    "actif": false
+  }
+]

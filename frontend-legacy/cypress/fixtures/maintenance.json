@@ -1,0 +1,43 @@
+[
+  {
+    "id": "maint-001",
+    "vehiculeId": "veh-003",
+    "immatriculation": "IJ-789-KL",
+    "typeIntervention": "REVISION",
+    "description": "Révision annuelle 60 000 km — vidange, filtres, freins",
+    "dateDebut": "2026-04-10T08:00:00.000Z",
+    "statut": "EN_COURS",
+    "technicienId": "tech-01",
+    "cout": 350.00
+  },
+  {
+    "id": "maint-002",
+    "vehiculeId": "veh-001",
+    "immatriculation": "AB-123-CD",
+    "typeIntervention": "PNEUS",
+    "description": "Remplacement 4 pneus avant saison hivernale",
+    "dateDebut": "2026-04-15T14:00:00.000Z",
+    "statut": "PLANIFIEE",
+    "cout": 480.00
+  },
+  {
+    "id": "maint-003",
+    "vehiculeId": "veh-002",
+    "immatriculation": "EF-456-GH",
+    "typeIntervention": "REPARATION",
+    "description": "Remplacement amortisseurs avant",
+    "dateDebut": "2026-03-20T09:00:00.000Z",
+    "dateFin": "2026-03-21T17:00:00.000Z",
+    "statut": "TERMINEE",
+    "cout": 620.00
+  },
+  {
+    "id": "maint-004",
+    "vehiculeId": "veh-004",
+    "immatriculation": "MN-012-OP",
+    "typeIntervention": "CONTROLE_TECHNIQUE",
+    "description": "Contrôle technique obligatoire",
+    "dateDebut": "2026-04-01T10:00:00.000Z",
+    "statut": "ANNULEE"
+  }
+]

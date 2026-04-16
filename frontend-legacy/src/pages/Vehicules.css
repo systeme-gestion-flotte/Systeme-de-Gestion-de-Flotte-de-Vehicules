@@ -1,0 +1,166 @@
+.vehicules-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 4px;
+}
+.subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Buttons */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover:not(:disabled) { background: #4f46e5; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.07);
+  color: #f8fafc;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.07);
+  color: #94a3b8;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-icon:hover { background: rgba(255,255,255,0.14); color: #f8fafc; }
+.btn-icon.danger:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); }
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover  { background: rgba(255,255,255,0.1); color: #f8fafc; }
+.filter-btn.active { background: rgba(99,102,241,0.2); color: #6366f1; border-color: rgba(99,102,241,0.4); }
+
+/* Table */
+.table-wrapper {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+thead th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(255,255,255,0.04); }
+tbody td { padding: 12px 16px; color: #cbd5e1; }
+.immat { font-weight: 600; color: #f8fafc; font-family: 'Courier New', monospace; }
+.actions-cell { display: flex; gap: 6px; }
+
+/* Statut select */
+.statut-select {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: #f8fafc;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.statut-select:focus { outline: none; border-color: #6366f1; }
+
+/* Form */
+.vehicle-form { display: flex; flex-direction: column; gap: 16px; }
+.form-row     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group   { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.8rem; font-weight: 500; color: #94a3b8; }
+.form-group input {
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+.form-group input:focus { outline: none; border-color: #6366f1; }
+.form-group input::placeholder { color: #64748b; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+/* States */
+.loading-state, .error-state {
+  text-align: center;
+  padding: 3rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+}
+.loading-state { color: #94a3b8; }
+.error-state   { color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
