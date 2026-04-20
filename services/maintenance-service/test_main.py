@@ -204,11 +204,17 @@ def test_kafka_consumer_mock():
         def value(self): return self.p
     
     # Tester creation
-    msg = MockMsg("fleet.vehicules.created", {"id": "KAFKA-V1", "immatriculation": "AA-111-AA", "statut": "DISPONIBLE"})
+    msg = MockMsg("fleet.vehicules.created", {
+        "eventType": "VEHICULE_CREE",
+        "vehicle": {"id": "KAFKA-V1", "immatriculation": "AA-111-AA", "statut": "DISPONIBLE"}
+    })
     process_message(msg)
     
     # Tester maj statut
-    msg2 = MockMsg("fleet.vehicules.statut", {"vehiculeId": "KAFKA-V1", "statut": "EN_PANNE"})
+    msg2 = MockMsg("fleet.vehicules.statut", {
+        "eventType": "VEHICULE_STATUT_CHANGE",
+        "vehicle": {"id": "KAFKA-V1", "statut": "EN_PANNE"}
+    })
     process_message(msg2)
     
     # Verification in DB
