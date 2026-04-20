@@ -78,15 +78,35 @@ async function startGateway() {
   app.all('/localisation*', proxyTo('http://fleet-localisation-service:3002', 'Localisation'));
   app.all('/alerts*', proxyTo('http://fleet-evenement-service:8000/alerts', 'Alertes'));
 
-  // Route dédiée pour les Utilisateurs (Mock ou Keycloak)
-  app.get('/users', async (req, res) => {
-    // Liste mockée pour la démo en attendant Keycloak Admin API full config
-    res.json([
-      { id: '1', username: 'admin-fleet', email: 'admin@fleet.local', roles: ['admin'], firstName: 'Admin', lastName: 'Flotte' },
-      { id: '2', username: 'manager-fleet', email: 'manager@fleet.local', roles: ['manager', 'admin'], firstName: 'Manager', lastName: 'Flotte' },
-      { id: '3', username: 'technicien-fleet', email: 'tech@fleet.local', roles: ['technicien'], firstName: 'Technicien', lastName: 'Flotte' },
-      { id: '4', username: 'conducteur-fleet', email: 'conducteur@fleet.local', roles: ['utilisateur'], firstName: 'Jean', lastName: 'Dupont' }
-    ]);
+  // Route dédiée pour les Utilisateurs (Stateful Mock pour démo)
+  let mockUsers = [
+    { id: '1', username: 'admin-fleet', email: 'admin@fleet.local', roles: ['admin'], firstName: 'Admin', lastName: 'Flotte' },
+    { id: '2', username: 'manager-fleet', email: 'manager@fleet.local', roles: ['manager', 'admin'], firstName: 'Manager', lastName: 'Flotte' },
+    { id: '3', username: 'technicien-fleet', email: 'tech@fleet.local', roles: ['technicien'], firstName: 'Technicien', lastName: 'Flotte' },
+    { id: '4', username: 'conducteur-fleet', email: 'conducteur@fleet.local', roles: ['utilisateur'], firstName: 'Jean', lastName: 'Dupont' }
+  ];
+
+  app.get('/users', (req, res) => res.json(mockUsers));
+  
+  app.post('/users', (req, res) => {
+    const newUser = { ...req.body, id: Date.now().toString() };
+    mockUsers.push(newUser);
+    res.status(201).json(newUser);
+  });
+
+  app.put('/users/:id', (req, res) => {
+    const idx = mockUsers.findIndex(u => u.id === req.params.id);
+    if (idx >= 0) {
+      mockUsers[idx] = { ...mockUsers[idx], ...req.body };
+      res.json(mockUsers[idx]);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  });
+
+  app.delete('/users/:id', (req, res) => {
+    mockUsers = mockUsers.filter(u => u.id !== req.params.id);
+    res.status(204).send();
   });
 
   // --- GraphQL Endpoint ---

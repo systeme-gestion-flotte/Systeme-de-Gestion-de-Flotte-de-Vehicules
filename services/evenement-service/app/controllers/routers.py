@@ -11,7 +11,7 @@ router = APIRouter()
 @router.get("/alerts", response_model=List[schemas.AlerteSchema])
 def get_alerts(
     db: Session = Depends(database.get_db),
-    user: dict = Depends(require_role("technicien", "manager", "admin"))
+    user: dict = Depends(require_role("technicien", "manager", "admin", "conducteur", "utilisateur"))
 ):
     return crud.get_active_alerts(db)
 
@@ -19,7 +19,7 @@ def get_alerts(
 def dismiss_alert(
     id: str,
     db: Session = Depends(database.get_db),
-    user: dict = Depends(require_role("technicien", "manager", "admin"))
+    user: dict = Depends(require_role("technicien", "manager", "admin", "conducteur", "utilisateur"))
 ):
     success = crud.dismiss_alert(db, id)
     if not success:
