@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -64,6 +65,8 @@ class VehicleControllerTest {
         when(vehicleService.createVehicle(any(VehicleRequestDto.class))).thenReturn(responseDto);
 
         mockMvc.perform(post("/api/vehicules")
+                        .with(jwt().jwt(j -> j.claim("preferred_username", "testuser"))
+                                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_admin")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
@@ -75,7 +78,9 @@ class VehicleControllerTest {
     void getAllVehicles_ReturnsList() throws Exception {
         when(vehicleService.getAllVehicles()).thenReturn(Arrays.asList(responseDto));
 
-        mockMvc.perform(get("/api/vehicules"))
+        mockMvc.perform(get("/api/vehicules")
+                        .with(jwt().jwt(j -> j.claim("preferred_username", "testuser"))
+                                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_utilisateur"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id_vehicule").value(vehicleId.toString()));
@@ -85,7 +90,9 @@ class VehicleControllerTest {
     void getVehicleById_ReturnsVehicle() throws Exception {
         when(vehicleService.getVehicleById(vehicleId)).thenReturn(responseDto);
 
-        mockMvc.perform(get("/api/vehicules/" + vehicleId))
+        mockMvc.perform(get("/api/vehicules/" + vehicleId)
+                        .with(jwt().jwt(j -> j.claim("preferred_username", "testuser"))
+                                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_utilisateur"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id_vehicule").value(vehicleId.toString()));
     }
@@ -94,7 +101,9 @@ class VehicleControllerTest {
     void deleteVehicle_ReturnsNoContent() throws Exception {
         doNothing().when(vehicleService).deleteVehicle(vehicleId);
 
-        mockMvc.perform(delete("/api/vehicules/" + vehicleId))
+        mockMvc.perform(delete("/api/vehicules/" + vehicleId)
+                        .with(jwt().jwt(j -> j.claim("preferred_username", "testuser"))
+                                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_admin"))))
                 .andExpect(status().isNoContent());
     }
 }

@@ -16,7 +16,7 @@ class GlobalExceptionHandlerTest {
         RuntimeException ex = new RuntimeException("Test error");
         ResponseEntity<?> response = handler.handleRuntimeException(ex);
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
     }
 
