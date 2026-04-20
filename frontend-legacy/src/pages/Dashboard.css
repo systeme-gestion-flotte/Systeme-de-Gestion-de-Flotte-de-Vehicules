@@ -111,24 +111,26 @@
 .action-pill {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: #f8fafc;
+  gap: 0.6rem;
+  padding: 0.6rem 1.25rem;
+  background-color: rgba(30, 41, 59, 0.7); /* Fond sombre bleuté */
+  border: 1px solid rgba(99, 102, 241, 0.3); /* Bordure indigo subtile */
+  border-radius: 9999px; /* Forme pilule parfaite */
+  color: #f1f5f9;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .action-pill:hover {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.4);
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.6);
   transform: translateY(-2px);
   color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2);
 }
 
 .action-pill svg {
