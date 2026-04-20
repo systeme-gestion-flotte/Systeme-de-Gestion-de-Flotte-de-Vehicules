@@ -19,6 +19,30 @@ spec:
         - name: {{ $name }}
           image: {{ $config.image }}
           imagePullPolicy: IfNotPresent
+          env:
+            {{- if eq $name "localisation" }}
+            - name: DATABASE_URL
+              value: "postgresql://admin:adminpassword@timescaledb:5432/localisation_db"
+            {{- else }}
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres:5432/{{ $name }}s"
+            - name: DATABASE_URL
+              value: "postgresql://admin:adminpassword@postgres:5432/{{ $name }}s"
+            {{- end }}
+            {{- if eq $name "evenement" }}
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            {{- end }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "admin"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "adminpassword"
+            - name: KAFKA_BROKER
+              value: "kafka:9092"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "{{ $name }}-service"
           ports:
             - containerPort: {{ $config.port }}
           resources:
