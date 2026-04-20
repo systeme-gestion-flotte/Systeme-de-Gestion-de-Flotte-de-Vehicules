@@ -28,7 +28,7 @@ describe('configuration', () => {
     expect(config.kafka.broker).toBe('localhost:9092');
     expect(config.kafka.groupId).toBe('conducteur-service-group');
     expect(config.kafka.topics.assignationDemandee).toBe('fleet.conducteurs.assignation');
-    expect(config.kafka.topics.vehiculesEvents).toBe('fleet.vehicules.events');
+    expect(config.kafka.topics.vehiculesEvents).toBe('vehicle-events');
     expect(config.keycloak.issuer).toBe('http://keycloak:8080/realms/fleet');
     expect(config.keycloak.jwksUri).toBe('http://keycloak:8080/realms/fleet/protocol/openid-connect/certs');
     expect(config.telemetry.jaegerEndpoint).toBe('http://jaeger:14268/api/traces');

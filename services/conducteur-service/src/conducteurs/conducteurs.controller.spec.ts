@@ -5,6 +5,16 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { CategoriePermis } from './entities/conducteur.entity';
 
+jest.mock('../telemetry/tracing', () => ({
+  getTracer: jest.fn().mockReturnValue({
+    startSpan: jest.fn().mockReturnValue({
+      setStatus: jest.fn(),
+      setAttribute: jest.fn(),
+      end: jest.fn(),
+    }),
+  }),
+}));
+
 const mockConducteur = {
   idConducteur: '550e8400-e29b-41d4-a716-446655440001',
   nom: 'Dupont',

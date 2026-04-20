@@ -9,6 +9,16 @@ import { ConducteursService } from '../conducteurs/conducteurs.service';
 import { CreateAssignationDto } from './dto/create-assignation.dto';
 import { CategoriePermis } from '../conducteurs/entities/conducteur.entity';
 
+jest.mock('../telemetry/tracing', () => ({
+  getTracer: jest.fn().mockReturnValue({
+    startSpan: jest.fn().mockReturnValue({
+      setStatus: jest.fn(),
+      setAttribute: jest.fn(),
+      end: jest.fn(),
+    }),
+  }),
+}));
+
 const mockConducteur = {
   idConducteur: '550e8400-e29b-41d4-a716-446655440001',
   nom: 'Dupont',

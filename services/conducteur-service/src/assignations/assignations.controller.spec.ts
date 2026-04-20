@@ -5,6 +5,16 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { StatutAssignation } from './entities/assignation.entity';
 
+jest.mock('../telemetry/tracing', () => ({
+  getTracer: jest.fn().mockReturnValue({
+    startSpan: jest.fn().mockReturnValue({
+      setStatus: jest.fn(),
+      setAttribute: jest.fn(),
+      end: jest.fn(),
+    }),
+  }),
+}));
+
 const mockAssignation = {
   idAssignation: 'assign-uuid-001',
   vehiculeId: 'vehicule-uuid-001',

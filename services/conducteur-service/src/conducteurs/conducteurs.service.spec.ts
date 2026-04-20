@@ -7,6 +7,16 @@ import { Conducteur, CategoriePermis } from './entities/conducteur.entity';
 import { CreateConducteurDto } from './dto/create-conducteur.dto';
 import { UpdateConducteurDto } from './dto/update-conducteur.dto';
 
+jest.mock('../telemetry/tracing', () => ({
+  getTracer: jest.fn().mockReturnValue({
+    startSpan: jest.fn().mockReturnValue({
+      setStatus: jest.fn(),
+      setAttribute: jest.fn(),
+      end: jest.fn(),
+    }),
+  }),
+}));
+
 const mockConducteur: Conducteur = {
   idConducteur: '550e8400-e29b-41d4-a716-446655440001',
   keycloakUserId: 'kc-user-1',

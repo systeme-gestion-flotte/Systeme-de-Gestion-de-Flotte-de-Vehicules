@@ -46,6 +46,7 @@ describe('JwtStrategy', () => {
         sub: 'user-123',
         preferred_username: 'jean.dupont',
         email: 'jean.dupont@example.com',
+        azp: 'fleet-app',
         realm_access: { roles: ['fleet-manager'] },
         resource_access: { 'fleet-app': { roles: ['admin'] } },
       };
@@ -82,6 +83,7 @@ describe('JwtStrategy', () => {
         sub: 'user-789',
         preferred_username: 'test.user',
         email: 'test@example.com',
+        azp: 'fleet-app',
         resource_access: { 'fleet-app': { roles: ['driver'] } },
       };
 

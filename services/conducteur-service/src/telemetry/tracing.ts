@@ -6,31 +6,39 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { trace } from '@opentelemetry/api';
 
-const traceExporter = new OTLPTraceExporter({
-  url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4317',
-});
-
-const prometheusExporter = new PrometheusExporter({ port: 9464 });
-
-const sdk = new NodeSDK({
-  resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'conducteur-service',
-    [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
-    [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]:
-      process.env.NODE_ENV || 'development',
-  }),
-  traceExporter,
-  metricReader: prometheusExporter,
-  instrumentations: [
-    getNodeAutoInstrumentations({
-      '@opentelemetry/instrumentation-http': { enabled: true },
-      '@opentelemetry/instrumentation-express': { enabled: true },
-      '@opentelemetry/instrumentation-pg': { enabled: true },
-    }),
-  ],
-});
+const isTest = process.env.NODE_ENV === 'test';
+let sdk: NodeSDK | null = null;
 
 export function initTelemetry(): void {
+  if (isTest) {
+    console.log('OpenTelemetry SDK sauté (mode test)');
+    return;
+  }
+
+  const traceExporter = new OTLPTraceExporter({
+    url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4317',
+  });
+
+  const prometheusExporter = new PrometheusExporter({ port: 9464 });
+
+  sdk = new NodeSDK({
+    resource: new Resource({
+      [SemanticResourceAttributes.SERVICE_NAME]: 'conducteur-service',
+      [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
+      [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]:
+        process.env.NODE_ENV || 'development',
+    }),
+    traceExporter,
+    metricReader: prometheusExporter,
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        '@opentelemetry/instrumentation-http': { enabled: true },
+        '@opentelemetry/instrumentation-express': { enabled: true },
+        '@opentelemetry/instrumentation-pg': { enabled: true },
+      }),
+    ],
+  });
+
   try {
     sdk.start();
     console.log('OpenTelemetry SDK initialisé');
@@ -44,6 +52,7 @@ export function getTracer() {
 }
 
 export async function shutdownTelemetry(): Promise<void> {
+  if (!sdk) return;
   try {
     await sdk.shutdown();
   } catch (err) {
