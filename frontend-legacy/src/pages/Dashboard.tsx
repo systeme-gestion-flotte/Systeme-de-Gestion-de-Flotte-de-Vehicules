@@ -51,7 +51,7 @@ const Dashboard = () => {
            <button className="action-pill" onClick={() => navigate('/maintenance')}>
              <Wrench size={14} /> Maintenance
            </button>
-           <button className="action-pill" onClick={() => navigate('/alertes')}>
+           <button className="action-pill" onClick={() => navigate('/alerts')}>
              <Bell size={14} /> Alertes
            </button>
         </div>
