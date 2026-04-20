@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { Activity, Zap, Map as MapIcon, RotateCw } from 'lucide-react';
+import { Activity, Zap, Map as MapIcon, RotateCw, Plus, Bell, Wrench } from 'lucide-react';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [positions, setPositions] = useState<any[]>([]);
   const [stats, setStats] = useState({
     activeVehicles: 0,
@@ -21,7 +23,7 @@ const Dashboard = () => {
         
         // Update stats
         const uniqueVehicles = new Set(newArr.map(p => p.vehicule_id)).size;
-        const avgSpeed = Math.round(newArr.reduce((acc, p) => acc + (p.vitesse || 0), 0) / newArr.length);
+        const avgSpeed = Math.round(newArr.reduce((acc, p) => acc + (p.vitesse || 0), 0) / (newArr.length || 1));
         
         setStats({
           activeVehicles: uniqueVehicles,
@@ -40,6 +42,21 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
+      <div className="page-header">
+        <h1>Tableau de Bord</h1>
+        <div className="quick-actions">
+           <button className="action-pill" onClick={() => navigate('/vehicules')}>
+             <Plus size={14} /> Véhicule
+           </button>
+           <button className="action-pill" onClick={() => navigate('/maintenance')}>
+             <Wrench size={14} /> Maintenance
+           </button>
+           <button className="action-pill" onClick={() => navigate('/alertes')}>
+             <Bell size={14} /> Alertes
+           </button>
+        </div>
+      </div>
+
       <div className="stats-grid">
         <div className="stat-card">
           <Activity color="#6366f1" />
@@ -73,7 +90,7 @@ const Dashboard = () => {
 
       <div className="charts-container">
         <div className="chart-card">
-          <h3>Vitesse en temps réel</h3>
+          <h3>Flux de vitesse en temps réel</h3>
           <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={positions}>
@@ -97,13 +114,14 @@ const Dashboard = () => {
         </div>
 
         <div className="chart-card">
-          <h3>Flux d'activité</h3>
+          <h3>Flux d'activité GPS</h3>
           <div className="activity-list">
+            {positions.length === 0 && <p style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>En attente de signaux...</p>}
             {positions.slice().reverse().map((p, i) => (
               <div key={i} className="activity-item">
                 <span className="activity-time">{p.time}</span>
                 <span className="activity-text">
-                  Véhicule <strong>{p.vehicule_id}</strong> a transmis sa position ({p.latitude.toFixed(4)}, {p.longitude.toFixed(4)})
+                  Véhicule <strong>{p.vehicule_id}</strong> à {p.latitude.toFixed(4)}, {p.longitude.toFixed(4)}
                 </span>
                 <span className="activity-tag">{p.vitesse} km/h</span>
               </div>

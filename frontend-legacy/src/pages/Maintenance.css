@@ -75,6 +75,12 @@
   text-transform: capitalize;
 }
 
+.top-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .statut-actions { display: flex; gap: 6px; }
 .statut-btn {
   display: flex; align-items: center; gap: 4px;
@@ -86,6 +92,13 @@
 .statut-btn.finish { color: #10b981; border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.1); }
 .statut-btn.cancel { color: #ef4444; border-color: rgba(239,68,68,0.35);  background: rgba(239,68,68,0.1);  }
 .statut-btn:hover { filter: brightness(1.2); }
+
+.statut-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
 
 .intervention-desc { font-size: 0.875rem; color: #94a3b8; margin: 0; line-height: 1.5; }
 

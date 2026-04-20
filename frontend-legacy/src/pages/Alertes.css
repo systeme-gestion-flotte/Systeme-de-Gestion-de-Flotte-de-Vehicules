@@ -139,3 +139,62 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Modal Détails Incident - Style Compact */
+.alerte-detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.5rem;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.6rem;
+}
+
+.detail-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.detail-body p {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+
+.detail-body p strong {
+  color: #94a3b8;
+  min-width: 80px;
+}
+
+.detail-info-box {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #6366f1;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.2rem;
+}

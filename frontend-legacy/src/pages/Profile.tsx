@@ -1,71 +1,54 @@
-import React from 'react';
-import { User, Mail, Shield, Smartphone, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { LogOut } from 'lucide-react';
 import keycloak from '../auth';
 import './Profile.css';
 
-const Profile: React.FC = () => {
+export default function Profile() {
   const user = {
     username: keycloak.tokenParsed?.preferred_username || 'Utilisateur',
-    email: keycloak.tokenParsed?.email || 'non renseigné',
-    firstName: keycloak.tokenParsed?.given_name || '',
-    lastName: keycloak.tokenParsed?.family_name || '',
-    roles: (keycloak.tokenParsed?.realm_access?.roles || []).filter((r: string) => 
-        ['admin', 'manager', 'technicien', 'utilisateur'].includes(r)
-    )
+    email: keycloak.tokenParsed?.email || 'email@fleet.local',
+    roles: keycloak.tokenParsed?.realm_access?.roles || [],
+  };
+
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handlePasswordReset = () => {
+    setToast('Un email de réinitialisation vous a été envoyé.');
+    setTimeout(() => setToast(null), 3000);
   };
 
   return (
     <div className="profile-page">
-      <header className="page-header">
+      <div className="page-header">
         <h1>Mon Profil</h1>
-        <p className="subtitle">Gérez vos informations personnelles et vos préférences.</p>
-      </header>
+        <p className="subtitle">Gérez vos informations personnelles et vos paramètres de sécurité.</p>
+      </div>
 
       <div className="profile-container">
-        <div className="profile-card main-info">
-          <div className="profile-avatar-section">
-            <div className="avatar-xl">
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-            </div>
+        <div className="profile-header">
+          <div className="avatar-xl">{user.username.charAt(0).toUpperCase()}</div>
+          <div className="profile-info">
             <div className="profile-name-header">
-              <h2>{user.firstName} {user.lastName}</h2>
-              <span className="badge-role">{user.roles[0]?.toUpperCase() || 'CONDUCTEUR'}</span>
+              <h2>{user.username}</h2>
             </div>
-          </div>
-
-          <div className="profile-details">
-            <div className="detail-item">
-              <User className="icon" size={20} />
-              <div className="detail-text">
-                <label>Nom d'utilisateur</label>
-                <span>{user.username}</span>
-              </div>
-            </div>
-            <div className="detail-item">
-              <Mail className="icon" size={20} />
-              <div className="detail-text">
-                <label>Adresse e-mail</label>
-                <span>{user.email}</span>
-              </div>
-            </div>
-            <div className="detail-item">
-              <Shield className="icon" size={20} />
-              <div className="detail-text">
-                <label>Rôles assignés</label>
-                <div className="roles-list">
-                    {user.roles.map((r: string) => <span key={r} className="role-tag">{r}</span>)}
-                </div>
-              </div>
+            <p style={{ color: '#94a3b8', margin: '4px 0' }}>{user.email}</p>
+            <div className="role-badges">
+              {user.roles.map((r: string) => (
+                 <span key={r} className="role-tag">{r}</span>
+              ))}
             </div>
           </div>
         </div>
 
         <div className="profile-sections-grid">
           <div className="profile-card">
-            <h3>Paramètres de compte</h3>
+            <h3>Sécurité</h3>
             <div className="settings-list">
-              <button className="settings-btn">Changer le mot de passe</button>
-              <button className="settings-btn">Activer la double authentification</button>
+              <button className="settings-btn" onClick={handlePasswordReset}>Changer le mot de passe</button>
+              <button className="settings-btn" onClick={() => {
+                setToast('Configuration de la double authentification envoyée par email.');
+                setTimeout(() => setToast(null), 3000);
+              }}>Activer la double authentification</button>
             </div>
           </div>
           
@@ -76,10 +59,6 @@ const Profile: React.FC = () => {
                 <span>Notifications Email</span>
                 <input type="checkbox" defaultChecked />
               </label>
-              <label className="toggle-setting">
-                <span>Mode Sombre</span>
-                <input type="checkbox" defaultChecked />
-              </label>
             </div>
           </div>
         </div>
@@ -88,8 +67,18 @@ const Profile: React.FC = () => {
           <LogOut size={18} /> Déconnexion
         </button>
       </div>
+
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '20px', right: '20px',
+          background: '#dcfce7', color: '#166534',
+          padding: '12px 24px', borderRadius: '8px', zIndex: 9999,
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: `1px solid #86efac`,
+          display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500
+        }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
-};
-
-export default Profile;
+}

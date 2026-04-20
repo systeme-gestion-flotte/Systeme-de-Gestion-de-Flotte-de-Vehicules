@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { io, Socket } from 'socket.io-client';
-import { Navigation, Wifi, WifiOff } from 'lucide-react';
+import { Navigation, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import api from '../api';
+import keycloak from '../auth';
 import './Localisation.css';
 
 // Fix Leaflet default icon with Vite/bundlers
@@ -71,10 +72,10 @@ export default function Localisation() {
   const socketRef                     = useRef<Socket | null>(null);
 
   // Charger les dernières positions via REST
-  useEffect(() => {
+  const fetchLatest = useCallback(() => {
     api.get<any[]>('/localisation/positions/latest')
       .then(({ data }) => {
-        const mapped = data.map(p => ({
+        let mapped = data.map(p => ({
           vehiculeId: p.vehicule_id,
           immatriculation: p.vehicule_id, // fallback si on n'a pas joint le nom
           statut: 'EN_COURSE',
@@ -83,10 +84,18 @@ export default function Localisation() {
           vitesse: p.vitesse,
           timestamp: p.horodatage
         }));
+
+        // SIMULATION: Un conducteur ne voit que la position de son propre véhicule
+        if (keycloak.hasRealmRole('utilisateur') && mapped.length > 0) {
+          mapped = [mapped[0]];
+        }
+
         setPositions(mapped);
       })
       .catch(() => {}); // silently ignore if endpoint not ready
   }, []);
+
+  useEffect(() => { fetchLatest(); }, [fetchLatest]);
 
   // Socket.IO — mises à jour temps réel
   useEffect(() => {
@@ -110,6 +119,13 @@ export default function Localisation() {
         timestamp: data.horodatage
       };
       setPositions(prev => {
+        // Filtrage conducteur pour les événements Websocket
+        if (keycloak.hasRealmRole('utilisateur')) {
+          if (prev.length > 0 && prev[0].vehiculeId !== mapped.vehiculeId) {
+            return prev;
+          }
+        }
+
         const idx = prev.findIndex(p => p.vehiculeId === mapped.vehiculeId);
         if (idx >= 0) {
           const next = [...prev];
@@ -133,9 +149,14 @@ export default function Localisation() {
           <h1>Suivi en temps réel</h1>
           <p className="subtitle">{positions.length} véhicule{positions.length !== 1 ? 's' : ''} localisé{positions.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className={`conn-badge ${connected ? 'connected' : 'disconnected'}`} data-testid="ws-status">
-          {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
-          {connected ? 'Connecté' : 'Hors ligne'}
+        <div className="header-actions">
+          <button className="btn-icon" onClick={fetchLatest} title="Rafraîchir" style={{ marginRight: '1rem' }}>
+            <RefreshCw size={16} />
+          </button>
+          <div className={`conn-badge ${connected ? 'connected' : 'disconnected'}`} data-testid="ws-status">
+            {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {connected ? 'Connecté' : 'Hors ligne'}
+          </div>
         </div>
       </div>
 

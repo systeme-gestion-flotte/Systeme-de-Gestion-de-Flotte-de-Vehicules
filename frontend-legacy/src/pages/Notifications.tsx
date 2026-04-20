@@ -1,5 +1,6 @@
-import React from 'react';
-import { Bell, Info, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, Info, AlertTriangle, CheckCircle, Trash2, RefreshCw } from 'lucide-react';
+import api from '../api';
 import './Notifications.css';
 
 interface Notification {
@@ -11,47 +12,77 @@ interface Notification {
   read: boolean;
 }
 
-const notifications: Notification[] = [
-  {
-    id: '1',
-    type: 'success',
-    title: 'Maintenance terminée',
-    message: 'Le véhicule V-102 a terminé sa révision annuelle.',
-    time: 'Il y a 1 heure',
-    read: false
-  },
-  {
-    id: '2',
-    type: 'info',
-    title: 'Nouveau conducteur',
-    message: 'Marc Durand a été ajouté à votre équipe.',
-    time: 'Il y a 3 heures',
-    read: true
-  },
-  {
-    id: '3',
-    type: 'warning',
-    title: 'Renouvellement permis',
-    message: 'Le permis de Luc Lefebvre expire dans 30 jours.',
-    time: 'Hier',
-    read: true
-  }
-];
+export default function Notifications() {
+  const [notifs, setNotifs] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
-const Notifications: React.FC = () => {
+  const fetchAlerts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resp = await api.get<any[]>('/alerts');
+      const mapped: Notification[] = resp.data.map(a => ({
+        id: String(a.id || a.id_alerte || Math.random()),
+        type: a.severite === 'CRITIQUE' ? 'warning' : 'info',
+        title: a.type_alerte || 'Alerte Système',
+        message: a.message || 'Aucun détail fourni.',
+        time: a.created_at ? new Date(a.created_at).toLocaleString() : 'Récemment',
+        read: false
+      }));
+      setNotifs(mapped);
+    } catch (err) {
+      console.error('Failed to fetch alerts:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
+
+  const markAsRead = (id: string) => {
+    setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllAsRead = () => {
+    setNotifs(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const deleteNotif = async (id: string) => {
+    try {
+      await api.delete(`/alerts/${id}`);
+      setNotifs(prev => prev.filter(n => n.id !== id));
+    } catch {
+      alert('Erreur lors de la suppression de l\'alerte.');
+    }
+  };
+
+  const unreadCount = notifs.filter(n => !n.read).length;
+
   return (
     <div className="notifications-page">
       <header className="page-header">
         <div className="title-section">
           <h1>Notifications</h1>
-          <span className="unread-count">1 non lue</span>
+          <span className="unread-count">{unreadCount} non lue{unreadCount !== 1 ? 's' : ''}</span>
         </div>
-        <p className="subtitle">Restez informé des événements importants de votre flotte.</p>
+        <div className="header-actions">
+           <button className="btn-icon" onClick={fetchAlerts} title="Actualiser"><RefreshCw size={18} /></button>
+           <button className="btn-secondary" onClick={markAllAsRead} disabled={unreadCount === 0}>
+             Tout marquer comme lu
+           </button>
+        </div>
       </header>
 
+      {loading && <div className="loading-state">Chargement des alertes…</div>}
+
       <div className="notifications-list">
-        {notifications.map(n => (
-          <div key={n.id} className={`notification-card ${n.read ? 'read' : 'unread'}`}>
+        {notifs.length === 0 && !loading && (
+          <div className="empty-state">
+            <Bell size={40} color="#94a3b8" />
+            <p>Aucune notification pour le moment.</p>
+          </div>
+        )}
+        {notifs.map(n => (
+          <div key={n.id} className={`notification-card ${n.read ? 'read' : 'unread'}`} onClick={() => markAsRead(n.id)}>
             <div className={`notif-icon-box ${n.type}`}>
                {n.type === 'success' && <CheckCircle size={20} />}
                {n.type === 'info' && <Info size={20} />}
@@ -64,14 +95,15 @@ const Notifications: React.FC = () => {
               </div>
               <p className="notif-message">{n.message}</p>
             </div>
+            <div className="notif-actions">
+              <button className="btn-icon danger" onClick={(e) => { e.stopPropagation(); deleteNotif(n.id); }} title="Supprimer">
+                <Trash2 size={16} />
+              </button>
+            </div>
             {!n.read && <div className="unread-dot"></div>}
           </div>
         ))}
       </div>
-      
-      <button className="btn-secondary-full">Tout marquer comme lu</button>
     </div>
   );
-};
-
-export default Notifications;
+}

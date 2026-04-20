@@ -20,10 +20,11 @@ interface VehiculeForm {
   immatriculation: string;
   marque: string;
   modele: string;
+  type: string;
   annee: string;
 }
 
-const EMPTY_FORM: VehiculeForm = { immatriculation: '', marque: '', modele: '', annee: '' };
+const EMPTY_FORM: VehiculeForm = { immatriculation: '', marque: '', modele: '', type: 'UTILITAIRE', annee: '' };
 
 const isAdmin = () => keycloak.hasRealmRole('admin');
 const isManager = () => keycloak.hasRealmRole('manager');
@@ -43,6 +44,22 @@ export default function Vehicules() {
   // Filtre statut
   const [filterStatut, setFilterStatut] = useState<string>('ALL');
 
+  // Custom UI feedback states
+  const [toast, setToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ msg: string; action: () => void } | null>(null);
+
+  const showToast = (msg: string, type: 'error' | 'success' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const getErrorMsg = (err: any, fallback: string) => {
+    const msg = err.response?.data?.message || err.response?.data?.detail || err.message;
+    if (Array.isArray(msg)) return msg.join(', ');
+    if (typeof msg === 'string') return msg;
+    return fallback;
+  };
+
   const fetchVehicules = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -58,7 +75,7 @@ export default function Vehicules() {
         }
       }
 
-      const mapped = rawData.map(v => ({
+      let mapped = rawData.map((v: any) => ({
         id: String(v.id_vehicule || v.id || Math.random()),
         immatriculation: v.immatriculation || '—',
         marque: v.marque || '—',
@@ -67,6 +84,12 @@ export default function Vehicules() {
         statut: (v.statut || 'DISPONIBLE').toUpperCase(),
         actif: v.actif !== undefined ? v.actif : true
       }));
+
+      // SIMULATION: Un conducteur ne voit que son propre véhicule
+      if (keycloak.hasRealmRole('utilisateur') && mapped.length > 0) {
+        mapped = [mapped[0]];
+      }
+
       setVehicules(mapped);
     } catch (err) {
       console.error('Fetch Vehicles Error:', err);
@@ -82,11 +105,17 @@ export default function Vehicules() {
   const openCreate = () => { setForm(EMPTY_FORM); setShowCreate(true); };
   const openEdit   = (v: Vehicule) => {
     setEditTarget(v);
-    setForm({ immatriculation: v.immatriculation, marque: v.marque, modele: v.modele, annee: String(v.annee) });
+    setForm({ 
+        immatriculation: v.immatriculation, 
+        marque: v.marque, 
+        modele: v.modele, 
+        type: (v as any).type || 'UTILITAIRE',
+        annee: String(v.annee) 
+    });
   };
   const closeModal = () => { setShowCreate(false); setEditTarget(null); };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
 
@@ -98,8 +127,10 @@ export default function Vehicules() {
       await api.post('/vehicules', { ...form, annee: Number(form.annee) });
       closeModal();
       fetchVehicules();
-    } catch {
-      alert('Erreur lors de la création.');
+      showToast('Véhicule créé avec succès !');
+    } catch (err: any) {
+      console.error(err);
+      showToast(getErrorMsg(err, 'Erreur lors de la création.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -110,11 +141,13 @@ export default function Vehicules() {
     if (!editTarget) return;
     setSaving(true);
     try {
+      if (!editTarget.id || editTarget.id.includes('0.')) throw new Error('ID invalide');
       await api.put(`/vehicules/${editTarget.id}`, { ...form, annee: Number(form.annee) });
       closeModal();
       fetchVehicules();
-    } catch {
-      alert('Erreur lors de la mise à jour.');
+      showToast('Véhicule mis à jour !');
+    } catch (err: any) {
+      showToast(getErrorMsg(err, 'Erreur lors de la mise à jour.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -122,21 +155,30 @@ export default function Vehicules() {
 
   const handleChangeStatut = async (v: Vehicule, statut: string) => {
     try {
+      if (!v.id || v.id.includes('0.')) throw new Error('ID invalide');
       await api.patch(`/vehicules/${v.id}/statut`, { statut });
       fetchVehicules();
-    } catch {
-      alert('Erreur changement de statut.');
+      showToast('Statut mis à jour !');
+    } catch (err: any) {
+      showToast(getErrorMsg(err, 'Erreur changement de statut.'), 'error');
     }
   };
 
-  const handleDelete = async (v: Vehicule) => {
-    if (!confirm(`Désactiver le véhicule ${v.immatriculation} ?`)) return;
-    try {
-      await api.delete(`/vehicules/${v.id}`);
-      fetchVehicules();
-    } catch {
-      alert('Erreur lors de la suppression.');
-    }
+  const handleDelete = (v: Vehicule) => {
+    setConfirmDialog({
+      msg: `Désactiver le véhicule ${v.immatriculation} ?`,
+      action: async () => {
+        setConfirmDialog(null);
+        try {
+          if (!v.id || v.id.includes('0.')) throw new Error('ID invalide');
+          await api.delete(`/vehicules/${v.id}`);
+          fetchVehicules();
+          showToast('Véhicule supprimé.', 'success');
+        } catch (err: any) {
+          showToast(getErrorMsg(err, 'Erreur lors de la suppression.'), 'error');
+        }
+      }
+    });
   };
 
   /* ── Render ── */
@@ -224,9 +266,11 @@ export default function Vehicules() {
                       <button className="btn-icon" onClick={() => openEdit(v)} title="Modifier">
                         <Pencil size={15} />
                       </button>
-                      <button className="btn-icon danger" onClick={() => handleDelete(v)} title="Désactiver">
-                        <Trash2 size={15} />
-                      </button>
+                      {isAdmin() && (
+                        <button className="btn-icon danger" onClick={() => handleDelete(v)} title="Désactiver">
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </td>
                   )}
                 </tr>
@@ -261,6 +305,29 @@ export default function Vehicules() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal Confirmation Suppression */}
+      <Modal isOpen={!!confirmDialog} title="Confirmation" onClose={() => setConfirmDialog(null)} width="400px">
+        <p style={{ padding: '10px 0', fontSize: '15px' }}>{confirmDialog?.msg}</p>
+        <div className="form-actions" style={{ marginTop: '20px' }}>
+          <button type="button" className="btn-secondary" onClick={() => setConfirmDialog(null)}>Annuler</button>
+          <button type="button" className="btn-primary danger" style={{ background: '#ef4444' }} onClick={confirmDialog?.action}>Désactiver</button>
+        </div>
+      </Modal>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '20px', right: '20px',
+          background: toast.type === 'error' ? '#fee2e2' : '#dcfce7',
+          color: toast.type === 'error' ? '#991b1b' : '#166534',
+          padding: '12px 24px', borderRadius: '8px', zIndex: 9999,
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: `1px solid ${toast.type === 'error' ? '#fca5a5' : '#86efac'}`,
+          display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500
+        }}>
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
@@ -268,7 +335,7 @@ export default function Vehicules() {
 /* Sous-composant champs partagés */
 function VehiculeFormFields({ form, onChange }: {
   form: VehiculeForm;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }) {
   return (
     <>
@@ -289,11 +356,23 @@ function VehiculeFormFields({ form, onChange }: {
             placeholder="Clio" required data-testid="input-modele" />
         </div>
       </div>
-      <div className="form-group">
-        <label>Année</label>
-        <input name="annee" type="number" min="1990" max="2030"
-          value={form.annee} onChange={onChange}
-          placeholder="2023" required data-testid="input-annee" />
+      <div className="form-row">
+        <div className="form-group">
+          <label>Type de véhicule</label>
+          <select name="type" value={form.type} onChange={onChange} className="form-select" required>
+            <option value="UTILITAIRE">Utilitaire</option>
+            <option value="BERLINE">Berline</option>
+            <option value="SUV">SUV</option>
+            <option value="CAMION">Camion</option>
+            <option value="MOTOCYCLETTE">Moto</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Année</label>
+          <input name="annee" type="number" min="1990" max="2030"
+            value={form.annee} onChange={onChange}
+            placeholder="2023" required data-testid="input-annee" />
+        </div>
       </div>
     </>
   );

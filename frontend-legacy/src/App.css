@@ -150,6 +150,12 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Select Option Global Theme Fix */
+option {
+  background-color: var(--bg-sidebar);
+  color: var(--text-main);
+}
+
 .nav-item:hover {
   background-color: var(--glass);
   color: #fff;

@@ -5,15 +5,17 @@ import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import './Conducteurs.css';
 
+import keycloak from '../auth';
+
 interface Conducteur {
   id: string;
   nom: string;
   prenom: string;
   email: string;
   telephone: string;
-  numeroPemis: string;
-  categoriePemis: string;
-  dateExpirationPemis: string;
+  numeroPermis: string;
+  categorie: string[];
+  dateValiditePermis: string;
   actif: boolean;
 }
 
@@ -22,15 +24,19 @@ interface ConducteurForm {
   prenom: string;
   email: string;
   telephone: string;
-  numeroPemis: string;
-  categoriePemis: string;
-  dateExpirationPemis: string;
+  numeroPermis: string;
+  categorie: string;
+  dateValiditePermis: string;
 }
 
 const EMPTY_FORM: ConducteurForm = {
   nom: '', prenom: '', email: '', telephone: '',
-  numeroPemis: '', categoriePemis: 'B', dateExpirationPemis: '',
+  numeroPermis: '', categorie: 'B', dateValiditePermis: '',
 };
+
+const isAdmin = () => keycloak.hasRealmRole('admin');
+const isManager = () => keycloak.hasRealmRole('manager');
+const canWrite = () => isAdmin() || isManager();
 
 export default function Conducteurs() {
   const [conducteurs, setConducteurs]   = useState<Conducteur[]>([]);
@@ -41,6 +47,22 @@ export default function Conducteurs() {
   const [form, setForm]                 = useState<ConducteurForm>(EMPTY_FORM);
   const [saving, setSaving]             = useState(false);
   const [search, setSearch]             = useState('');
+  
+  // Custom UI feedback states
+  const [toast, setToast] = useState<{ msg: string; type: 'error' | 'success' } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ msg: string; action: () => void } | null>(null);
+
+  const showToast = (msg: string, type: 'error' | 'success' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const getErrorMsg = (err: any, fallback: string) => {
+    const msg = err.response?.data?.message || err.response?.data?.detail;
+    if (Array.isArray(msg)) return msg.join(', ');
+    if (typeof msg === 'string') return msg;
+    return fallback;
+  };
 
   const fetchConducteurs = useCallback(async () => {
     setLoading(true); setError(null);
@@ -55,15 +77,15 @@ export default function Conducteurs() {
         }
       }
 
-      const mapped = rawData.map(c => ({
-        id: String(c.id_conducteur || c.id || Math.random()),
+      const mapped = rawData.map((c: any) => ({
+        id: String(c.idConducteur || c.id_conducteur || c.id || Math.random()),
         nom: c.nom || 'Inconnu',
         prenom: c.prenom || 'Inconnu',
         email: c.email || '—',
         telephone: c.telephone || '—',
-        numeroPemis: c.numero_permis || c.numeroPemis || '—',
-        categoriePemis: c.categorie_permis || c.categoriePemis || 'B',
-        dateExpirationPemis: c.date_expiration_permis || c.dateExpirationPemis || '',
+        numeroPermis: c.numero_permis || c.numeroPermis || '—',
+        categorie: Array.isArray(c.categorie) ? c.categorie : [c.categorie || 'B'],
+        dateValiditePermis: c.date_validite_permis || c.dateValiditePermis || '',
         actif: c.actif !== undefined ? c.actif : true
       }));
       setConducteurs(mapped);
@@ -82,8 +104,8 @@ export default function Conducteurs() {
     setEditTarget(c);
     setForm({
       nom: c.nom, prenom: c.prenom, email: c.email, telephone: c.telephone,
-      numeroPemis: c.numeroPemis, categoriePemis: c.categoriePemis,
-      dateExpirationPemis: c.dateExpirationPemis?.slice(0, 10) ?? '',
+      numeroPermis: c.numeroPermis, categorie: c.categorie[0] || 'B',
+      dateValiditePermis: c.dateValiditePermis?.slice(0, 10) ?? '',
     });
   };
   const closeModal = () => { setShowCreate(false); setEditTarget(null); };
@@ -94,10 +116,13 @@ export default function Conducteurs() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
+    const { telephone, ...rest } = form; // Telephone not in backend DTO
+    const payload = { ...rest, categorie: [form.categorie] };
     try {
-      await api.post('/conducteurs', form);
-      closeModal(); fetchConducteurs();
-    } catch { alert('Erreur lors de la création.'); }
+      await api.post('/conducteurs', payload);
+      closeModal(); fetchConducteurs(); 
+      showToast('Conducteur créé avec succès !');
+    } catch (err) { showToast(getErrorMsg(err, 'Erreur lors de la création.'), 'error'); }
     finally { setSaving(false); }
   };
 
@@ -105,19 +130,30 @@ export default function Conducteurs() {
     e.preventDefault();
     if (!editTarget) return;
     setSaving(true);
+    const { telephone, ...rest } = form; // Telephone not in backend DTO
+    const payload = { ...rest, categorie: [form.categorie] };
     try {
-      await api.put(`/conducteurs/${editTarget.id}`, form);
+      if (!editTarget.id || editTarget.id.includes('0.')) throw new Error('ID invalide');
+      await api.put(`/conducteurs/${editTarget.id}`, payload);
       closeModal(); fetchConducteurs();
-    } catch { alert('Erreur lors de la mise à jour.'); }
+      showToast('Conducteur modifié avec succès !');
+    } catch (err) { showToast(getErrorMsg(err, 'Erreur lors de la mise à jour.'), 'error'); }
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (c: Conducteur) => {
-    if (!confirm(`Désactiver ${c.prenom} ${c.nom} ?`)) return;
-    try {
-      await api.delete(`/conducteurs/${c.id}`);
-      fetchConducteurs();
-    } catch { alert('Erreur lors de la suppression.'); }
+  const handleDelete = (c: Conducteur) => {
+    setConfirmDialog({
+      msg: `Voulez-vous vraiment désactiver ${c.prenom} ${c.nom} ?`,
+      action: async () => {
+        setConfirmDialog(null);
+        try {
+          if (!c.id || c.id.includes('0.')) throw new Error('ID invalide');
+          await api.delete(`/conducteurs/${c.id}`);
+          fetchConducteurs();
+          showToast('Conducteur supprimé.', 'success');
+        } catch (err) { showToast(getErrorMsg(err, 'Erreur lors de la suppression.'), 'error'); }
+      }
+    });
   };
 
   const filtered = conducteurs.filter(c =>
@@ -170,18 +206,22 @@ export default function Conducteurs() {
               <div className="card-header">
                 <div className="avatar-lg">{c.prenom.charAt(0)}{c.nom.charAt(0)}</div>
                 <div className="card-actions">
-                  <button className="btn-icon" onClick={() => openEdit(c)} title="Modifier"><Pencil size={14} /></button>
-                  <button className="btn-icon danger" onClick={() => handleDelete(c)} title="Désactiver"><Trash2 size={14} /></button>
+                  {canWrite() && (
+                    <>
+                      <button className="btn-icon" onClick={() => openEdit(c)} title="Modifier"><Pencil size={14} /></button>
+                      {isAdmin() && <button className="btn-icon danger" onClick={() => handleDelete(c)} title="Désactiver"><Trash2 size={14} /></button>}
+                    </>
+                  )}
                 </div>
               </div>
               <h3 className="card-name">{c.prenom} {c.nom}</h3>
               <p className="card-email">{c.email}</p>
               <p className="card-phone">{c.telephone}</p>
               <div className="card-permis">
-                <span className="permis-label">Permis {c.categoriePemis}</span>
-                <span className="permis-num">{c.numeroPemis}</span>
-                <span className="permis-exp" style={{ color: expirationColor(c.dateExpirationPemis) }}>
-                  Exp. {c.dateExpirationPemis ? new Date(c.dateExpirationPemis).toLocaleDateString('fr-FR') : '—'}
+                <span className="permis-label">Permis {c.categorie.join(', ')}</span>
+                <span className="permis-num">{c.numeroPermis}</span>
+                <span className="permis-exp" style={{ color: expirationColor(c.dateValiditePermis) }}>
+                  Exp. {c.dateValiditePermis ? new Date(c.dateValiditePermis).toLocaleDateString('fr-FR') : '—'}
                 </span>
               </div>
               <div className="card-status"><StatusBadge status={c.actif} /></div>
@@ -215,6 +255,29 @@ export default function Conducteurs() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal Confirmation Suppression */}
+      <Modal isOpen={!!confirmDialog} title="Confirmation" onClose={() => setConfirmDialog(null)} width="400px">
+        <p style={{ padding: '10px 0', fontSize: '15px' }}>{confirmDialog?.msg}</p>
+        <div className="form-actions" style={{ marginTop: '20px' }}>
+          <button type="button" className="btn-secondary" onClick={() => setConfirmDialog(null)}>Annuler</button>
+          <button type="button" className="btn-primary danger" style={{ background: '#ef4444' }} onClick={confirmDialog?.action}>Désactiver</button>
+        </div>
+      </Modal>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '20px', right: '20px',
+          background: toast.type === 'error' ? '#fee2e2' : '#dcfce7',
+          color: toast.type === 'error' ? '#991b1b' : '#166534',
+          padding: '12px 24px', borderRadius: '8px', zIndex: 9999,
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', border: `1px solid ${toast.type === 'error' ? '#fca5a5' : '#86efac'}`,
+          display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500
+        }}>
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
@@ -246,11 +309,11 @@ function ConducteurFormFields({ form, onChange }: {
       <div className="form-row">
         <div className="form-group">
           <label>Numéro de permis</label>
-          <input name="numeroPemis" value={form.numeroPemis} onChange={onChange} placeholder="12AB34567" required data-testid="input-permis" />
+          <input name="numeroPermis" value={form.numeroPermis} onChange={onChange} placeholder="12AB34567" required data-testid="input-permis" />
         </div>
         <div className="form-group">
           <label>Catégorie</label>
-          <select name="categoriePemis" value={form.categoriePemis} onChange={onChange} className="form-select" data-testid="select-categorie">
+          <select name="categorie" value={form.categorie} onChange={onChange} className="form-select" data-testid="select-categorie">
             {['A', 'B', 'C', 'D', 'BE', 'CE'].map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
@@ -258,8 +321,8 @@ function ConducteurFormFields({ form, onChange }: {
         </div>
       </div>
       <div className="form-group">
-        <label>Date d'expiration du permis</label>
-        <input name="dateExpirationPemis" type="date" value={form.dateExpirationPemis} onChange={onChange} required data-testid="input-expiration" />
+        <label>Date de validité du permis</label>
+        <input name="dateValiditePermis" type="date" value={form.dateValiditePermis} onChange={onChange} required data-testid="input-expiration" />
       </div>
     </>
   );
