@@ -248,7 +248,7 @@ export default function Localisation() {
               <h4>Détails</h4>
               <div className="detail-row"><span>Immat.</span><strong>{selectedPos.immatriculation}</strong></div>
               <div className="detail-row"><span>Statut</span><strong>{selectedPos.statut}</strong></div>
-              <div className="detail-row"><span>Vitesse</span><strong>{selectedPos.vitesse ?? 0} km/h</strong></div>
+              <div className="detail-row"><span>Vitesse actuelle</span><strong>{selectedPos.vitesse ?? 0} km/h</strong></div>
               <div className="detail-row">
                 <span>Position</span>
                 <strong>{selectedPos.latitude.toFixed(5)}, {selectedPos.longitude.toFixed(5)}</strong>

@@ -283,10 +283,10 @@ export default function Maintenance() {
         onClose={closeModal} 
         width="560px"
       >
-        <form onSubmit={editTarget ? handleUpdate : handleCreate} className="intervention-form">
+        <form onSubmit={editTarget ? handleUpdate : handleCreate} className="intervention-form" data-testid="create-intervention-form">
           <div className="form-group">
             <label>Véhicule</label>
-            <select name="vehiculeId" value={form.vehiculeId} onChange={handleChange} required className="form-select">
+            <select name="vehiculeId" value={form.vehiculeId} onChange={handleChange} required className="form-select" data-testid="input-vehicule-id">
               <option value="">Sélectionnez un véhicule</option>
               {vehicules.map(v => (
                 <option key={v.id} value={v.id}>{v.immatriculation}</option>
@@ -308,7 +308,7 @@ export default function Maintenance() {
           <div className="form-group">
             <label>Description</label>
             <textarea name="description" value={form.description} onChange={handleChange}
-              rows={3} placeholder="Décrivez l'intervention…" />
+              rows={3} placeholder="Décrivez l'intervention…" data-testid="input-description" />
           </div>
           <div className="form-row">
             <div className="form-group">
@@ -383,7 +383,7 @@ function InterventionCard({ intervention: i, onEdit, onDelete, onStart, onFinish
   };
 
   return (
-    <div className="intervention-card">
+    <div className="intervention-card" data-testid={`intervention-card-${i.id}`}>
       <div className="intervention-header">
         <div className="intervention-meta">
           <span className="intervention-type">{(i.typeIntervention || 'AUTRE').replace('_', ' ')}</span>
@@ -403,10 +403,10 @@ function InterventionCard({ intervention: i, onEdit, onDelete, onStart, onFinish
       {canWrite && i.statut !== 'TERMINEE' && i.statut !== 'ANNULEE' && (
         <div className="statut-actions-row">
           {i.statut === 'PLANIFIEE' && (
-            <button className="statut-btn start" onClick={onStart}><CheckCircle size={14} /> Démarrer</button>
+            <button className="statut-btn start" onClick={onStart} data-testid="btn-start-intervention"><CheckCircle size={14} /> Démarrer</button>
           )}
           {i.statut === 'EN_COURS' && (
-            <button className="statut-btn finish" onClick={() => setShowFinishModal(true)}><CheckCircle size={14} /> Terminer</button>
+            <button className="statut-btn finish" onClick={() => setShowFinishModal(true)} data-testid="btn-finish-intervention"><CheckCircle size={14} /> Terminer</button>
           )}
           <button className="statut-btn cancel" onClick={onCancel}><XCircle size={14} /> Annuler</button>
         </div>

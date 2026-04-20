@@ -1,0 +1,29 @@
+services:
+  vehicule:
+    image: fleet-vehicule-service:latest
+    port: 4000
+    replicas: 2
+  conducteur:
+    image: fleet-conducteur-service:latest
+    port: 3000
+    replicas: 2
+  maintenance:
+    image: fleet-maintenance-service:latest
+    port: 8000
+    replicas: 2
+  evenement:
+    image: fleet-evenement-service:latest
+    port: 8000
+    replicas: 2
+  localisation:
+    image: fleet-localisation-service:latest
+    port: 3002
+    replicas: 2
+  gateway:
+    image: fleet-api-gateway:latest
+    port: 4000
+    replicas: 2
+
+ingress:
+  enabled: true
+  host: fleet.local

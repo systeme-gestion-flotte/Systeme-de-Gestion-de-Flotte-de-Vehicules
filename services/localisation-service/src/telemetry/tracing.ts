@@ -2,12 +2,12 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { trace } from '@opentelemetry/api';
 
-const jaegerExporter = new JaegerExporter({
-  endpoint: process.env.JAEGER_ENDPOINT || 'http://jaeger:14268/api/traces',
+const traceExporter = new OTLPTraceExporter({
+  url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4317',
 });
 
 // Port 9465 pour éviter le conflit avec conducteur-service (9464)
@@ -19,7 +19,7 @@ const sdk = new NodeSDK({
     [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
     [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
   }),
-  traceExporter: jaegerExporter,
+  traceExporter,
   metricReader: prometheusExporter,
   instrumentations: [
     getNodeAutoInstrumentations({

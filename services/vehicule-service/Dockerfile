@@ -20,6 +20,9 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+# Téléchargement de l'agent OpenTelemetry
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar .
+
 RUN addgroup -S spring && adduser -S spring -G spring
 
 COPY --from=builder --chown=spring:spring /app/target/*.jar app.jar
@@ -28,4 +31,4 @@ USER spring
 
 EXPOSE 4000
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-javaagent:opentelemetry-javaagent.jar", "-jar", "app.jar"]

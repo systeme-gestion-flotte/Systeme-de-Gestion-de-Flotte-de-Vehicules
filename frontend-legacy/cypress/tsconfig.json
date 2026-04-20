@@ -1,14 +1,10 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "esnext",
+    "module": "commonjs",
     "lib": ["es2020", "dom"],
     "types": ["cypress", "node"],
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "ignoreDeprecations": "5.0"
+    "skipLibCheck": true
   },
   "include": ["e2e/**/*.cy.ts", "support/**/*.ts"]
 }

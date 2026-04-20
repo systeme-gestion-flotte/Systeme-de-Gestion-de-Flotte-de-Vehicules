@@ -34,5 +34,5 @@ USER appuser
 # Exposition du port (FastAPI utilise généralement 8000 par défaut)
 EXPOSE 8000
 
-# Commande de démarrage (on utilise la version Pro avec base de données)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Commande de démarrage avec instrumentation OpenTelemetry
+CMD ["opentelemetry-instrument", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

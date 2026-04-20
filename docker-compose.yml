@@ -136,8 +136,11 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KEYCLOAK_ISSUER_URI=http://localhost:9080/realms/fleet-management
       - KEYCLOAK_JWK_URI=http://fleet-keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
-      - OTEL_SDK_DISABLED=true
-      - OTEL_JAVAAGENT_ENABLED=false
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=vehicule-service
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
@@ -157,6 +160,8 @@ services:
       - KAFKA_BROKER=kafka:9092
       - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
       - KEYCLOAK_JWKS_URI=http://fleet-keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=conducteur-service
     depends_on:
       - postgres
       - kafka
@@ -173,8 +178,10 @@ services:
     environment:
       - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/maintenance
       - KAFKA_BROKER=kafka:9092
-      - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
       - JWKS_URL=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=maintenance-service
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=maintenance-service
     depends_on:
       - postgres
       - kafka
@@ -192,6 +199,8 @@ services:
       - DATABASE_URL=postgresql://admin:adminpassword@postgres:5432/evenements
       - REDIS_URL=redis://redis:6379
       - KAFKA_BROKER=kafka:9092
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=evenement-service
     depends_on:
       - postgres
       - redis
@@ -212,6 +221,8 @@ services:
       - KAFKA_BROKER=kafka:9092
       - KEYCLOAK_ISSUER=http://localhost:9080/realms/fleet-management
       - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/fleet-management/protocol/openid-connect/certs
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=localisation-service
       - ENABLE_SIMULATOR=true
     depends_on:
       - timescaledb
@@ -232,6 +243,8 @@ services:
       - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000
       - EVENEMENT_SERVICE_URL=http://evenement-service:8000
       - LOCALISATION_SERVICE_URL=http://localisation-service:3002
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=api-gateway
     depends_on:
       - vehicule-service
       - conducteur-service
@@ -257,8 +270,56 @@ services:
     networks:
       - fleet-network
 
+  # ==========================================
+  # --- 3. OBSERVABILITÉ & MONITORING ---
+  # ==========================================
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: fleet-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+      - "8889:8889" # Prometheus exporter port
+    networks:
+      - fleet-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: fleet-jaeger
+    ports:
+      - "16686:16686" # UI
+      - "4317"       # OTLP gRPC (internal)
+    networks:
+      - fleet-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fleet-prometheus
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - fleet-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fleet-grafana
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - fleet-network
+
 # ==========================================
-# --- 3. VOLUMES ET RÉSEAUX ---
+# --- 4. VOLUMES ET RÉSEAUX ---
 # ==========================================
 volumes:
   postgres_data:

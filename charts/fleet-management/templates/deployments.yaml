@@ -1,0 +1,31 @@
+{{- range $name, $config := .Values.services }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}-service
+  labels:
+    app: {{ $name }}
+spec:
+  replicas: {{ $config.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: {{ $config.image }}
+          ports:
+            - containerPort: {{ $config.port }}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+---
+{{- end }}
