@@ -1,1 +1,12 @@
-const { defineConfig } = require('cypress'); module.exports = defineConfig({ e2e: { baseUrl: 'http://127.0.0.1:5173', setupNodeEvents(on, config) { } } });
+const { defineConfig } = require('cypress');
+
+module.exports = defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:5173',
+    specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+    supportFile: 'cypress/support/e2e.ts',
+    setupNodeEvents(on, config) {
+      // implement node event listeners here
+    },
+  },
+});

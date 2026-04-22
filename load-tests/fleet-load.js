@@ -9,7 +9,7 @@ export const options = {
   ],
 };
 
-const BASE_URL = 'http://api-gateway:4000';
+const BASE_URL = 'http://localhost:4000';
 
 export default function () {
   // 1. Liste des véhicules
