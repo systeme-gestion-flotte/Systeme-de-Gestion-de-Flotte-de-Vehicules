@@ -21,7 +21,8 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Téléchargement de l'agent OpenTelemetry
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar .
+RUN apk add --no-cache curl \
+    && curl -L https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.32.0/opentelemetry-javaagent.jar -o opentelemetry-javaagent.jar
 
 RUN addgroup -S spring && adduser -S spring -G spring
 
