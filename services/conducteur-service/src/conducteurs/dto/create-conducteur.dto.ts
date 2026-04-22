@@ -50,6 +50,12 @@ export class CreateConducteurDto {
   @IsEnum(CategoriePermis, { each: true })
   categorie: CategoriePermis[];
 
+  @ApiPropertyOptional({ description: 'Téléphone du conducteur', example: '0612345678' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  telephone?: string;
+
   @ApiProperty({
     description: 'Date de validité du permis',
     example: '2028-12-31',

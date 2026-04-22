@@ -262,6 +262,7 @@ components:
         email:                { type: string, format: email }
         numero_permis:        { type: string }
         date_validite_permis: { type: string, format: date }
+        telephone:            { type: string }
         actif:                { type: boolean }
         created_at:           { type: string, format: date-time }
 
@@ -275,6 +276,7 @@ components:
         email:                { type: string, format: email }
         numero_permis:        { type: string }
         date_validite_permis: { type: string, format: date }
+        telephone:            { type: string }
 
     UpdateConducteurDto:
       type: object

@@ -12,6 +12,8 @@ export enum CategoriePermis {
   B = 'B',
   C = 'C',
   D = 'D',
+  BE = 'BE',
+  CE = 'CE',
 }
 
 @Entity('conducteur')
@@ -41,6 +43,9 @@ export class Conducteur {
     name: 'categorie',
   })
   categorie: CategoriePermis[];
+
+  @Column({ name: 'telephone', length: 20, nullable: true })
+  telephone: string;
 
   @Column({ type: 'date', name: 'date_validite_permis' })
   dateValiditePermis: Date;

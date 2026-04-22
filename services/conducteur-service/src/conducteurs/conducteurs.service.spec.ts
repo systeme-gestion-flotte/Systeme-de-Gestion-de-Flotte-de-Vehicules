@@ -25,6 +25,7 @@ const mockConducteur: Conducteur = {
   email: 'jean.dupont@example.com',
   numeroPermis: 'AB-123456',
   categorie: [CategoriePermis.B],
+  telephone: '0606060606',
   dateValiditePermis: new Date('2030-12-31'),
   actif: true,
   createdAt: new Date('2026-01-01'),

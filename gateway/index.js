@@ -84,7 +84,10 @@ async function startGateway() {
     { id: '1', username: 'admin-fleet', email: 'admin@fleet.local', roles: ['admin'], firstName: 'Admin', lastName: 'Flotte' },
     { id: '2', username: 'manager-fleet', email: 'manager@fleet.local', roles: ['manager', 'admin'], firstName: 'Manager', lastName: 'Flotte' },
     { id: '3', username: 'technicien-fleet', email: 'tech@fleet.local', roles: ['technicien'], firstName: 'Technicien', lastName: 'Flotte' },
-    { id: '4', username: 'conducteur-fleet', email: 'conducteur@fleet.local', roles: ['utilisateur'], firstName: 'Jean', lastName: 'Dupont' }
+    { id: '4', username: 'conducteur-fleet', email: 'conducteur@fleet.local', roles: ['utilisateur'], firstName: 'Jean', lastName: 'Dupont' },
+    { id: '5', username: 'jack.dubois', email: 'jackdubois@gmail.com', roles: ['utilisateur'], firstName: 'Jack', lastName: 'Dubois' },
+    { id: '6', username: 'pierre.leclerc', email: 'pierre@fleet.local', roles: ['utilisateur'], firstName: 'Pierre', lastName: 'Leclerc' },
+    { id: '7', username: 'sophie.martin', email: 'sophie@fleet.local', roles: ['utilisateur'], firstName: 'Sophie', lastName: 'Martin' }
   ];
 
   app.get('/users', (req, res) => res.json(mockUsers));

@@ -9,6 +9,8 @@ import './Maintenance.css';
 interface Vehicule {
   id: string;
   immatriculation: string;
+  marque?: string;
+  modele?: string;
 }
 
 interface Intervention {
@@ -73,7 +75,12 @@ export default function Maintenance() {
     try {
       const resp = await api.get<any>('/vehicules');
       let data = Array.isArray(resp.data) ? resp.data : (resp.data.data || []);
-      setVehicules(data.map((v: any) => ({ id: v.id_vehicule || v.id, immatriculation: v.immatriculation })));
+      setVehicules(data.map((v: any) => ({ 
+        id: v.id_vehicule || v.id, 
+        immatriculation: v.immatriculation,
+        marque: v.marque,
+        modele: v.modele
+      })));
     } catch (err) { console.error('Fetch vehicles error:', err); }
   }, []);
 
@@ -87,7 +94,7 @@ export default function Maintenance() {
         id: String(i.id_intervention || i.id || Math.random()),
         vehiculeId: String(i.vehicule_id || i.vehiculeId || 'Inconnu'),
         immatriculation: i.immatriculation || i.vehicule_immat || '—',
-        typeIntervention: i.type_intervention || i.typeIntervention || 'AUTRE',
+        typeIntervention: i.type || i.type_intervention || i.typeIntervention || 'AUTRE',
         description: i.description || '',
         dateDebut: i.date_debut || i.date_planifiee || i.dateDebut || new Date().toISOString(),
         dateFin: i.date_fin || i.dateFin,
@@ -265,6 +272,7 @@ export default function Maintenance() {
             <InterventionCard
               key={i.id}
               intervention={i}
+              vehicule={vehicules.find(v => v.id === i.vehiculeId)}
               onEdit={() => openEdit(i)}
               onDelete={() => handleDelete(i.id)}
               onStart={() => handleChangeStatut(i.id, 'demarrer')}
@@ -355,8 +363,9 @@ export default function Maintenance() {
   );
 }
 
-function InterventionCard({ intervention: i, onEdit, onDelete, onStart, onFinish, onCancel, canWrite }: {
+function InterventionCard({ intervention: i, vehicule, onEdit, onDelete, onStart, onFinish, onCancel, canWrite }: {
   intervention: Intervention;
+  vehicule?: Vehicule;
   onEdit: () => void;
   onDelete: () => void;
   onStart: () => void;
@@ -434,7 +443,11 @@ function InterventionCard({ intervention: i, onEdit, onDelete, onStart, onFinish
       )}
 
       <div className="intervention-footer">
-        {i.immatriculation && <span className="immat-tag">{i.immatriculation}</span>}
+        {vehicule ? (
+          <span className="immat-tag">{vehicule.marque} {vehicule.modele} — {i.immatriculation}</span>
+        ) : (
+          <span className="immat-tag">{i.immatriculation}</span>
+        )}
         <span className="date-tag">Début : {formatDate(i.dateDebut)}</span>
         {i.cout != null && <span className="cost-tag">{Number(i.cout).toFixed(2)} €</span>}
       </div>

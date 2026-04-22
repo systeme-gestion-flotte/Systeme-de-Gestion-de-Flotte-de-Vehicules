@@ -116,8 +116,7 @@ export default function Conducteurs() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
-    const { telephone, ...rest } = form; // Telephone not in backend DTO
-    const payload = { ...rest, categorie: [form.categorie] };
+    const payload = { ...form, categorie: [form.categorie] };
     try {
       await api.post('/conducteurs', payload);
       closeModal(); fetchConducteurs(); 
@@ -130,8 +129,7 @@ export default function Conducteurs() {
     e.preventDefault();
     if (!editTarget) return;
     setSaving(true);
-    const { telephone, ...rest } = form; // Telephone not in backend DTO
-    const payload = { ...rest, categorie: [form.categorie] };
+    const payload = { ...form, categorie: [form.categorie] };
     try {
       if (!editTarget.id || editTarget.id.includes('0.')) throw new Error('ID invalide');
       await api.put(`/conducteurs/${editTarget.id}`, payload);
