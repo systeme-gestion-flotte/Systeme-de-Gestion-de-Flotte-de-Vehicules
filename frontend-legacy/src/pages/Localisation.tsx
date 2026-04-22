@@ -77,7 +77,7 @@ export default function Localisation() {
       .then(({ data }) => {
         let mapped = data.map(p => ({
           vehiculeId: p.vehicule_id,
-          immatriculation: p.vehicule_id, // fallback si on n'a pas joint le nom
+          immatriculation: p.immatriculation || p.vehicule_id, // use joined immat if available
           statut: 'EN_COURSE',
           latitude: p.latitude,
           longitude: p.longitude,

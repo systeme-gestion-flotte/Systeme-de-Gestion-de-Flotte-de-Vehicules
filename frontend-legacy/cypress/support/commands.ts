@@ -22,6 +22,7 @@ Cypress.Commands.add('mockApi', () => {
   cy.intercept('GET', 'http://localhost:4000/localisation/positions/latest', { body: [] }).as('getPositions');
 });
 
+
 // Type augmentation pour TypeScript
 declare global {
   namespace Cypress {

@@ -5,9 +5,9 @@
     "prenom": "Jean",
     "email": "jean.dupont@fleet.local",
     "telephone": "0612345678",
-    "numeroPemis": "12AB34567",
-    "categoriePemis": "B",
-    "dateExpirationPemis": "2027-06-30",
+    "numeroPermis": "12AB34567",
+    "categorie": "B",
+    "dateValiditePermis": "2027-06-30",
     "actif": true
   },
   {
@@ -16,9 +16,9 @@
     "prenom": "Sophie",
     "email": "sophie.martin@fleet.local",
     "telephone": "0698765432",
-    "numeroPemis": "98CD12345",
-    "categoriePemis": "C",
-    "dateExpirationPemis": "2025-12-31",
+    "numeroPermis": "98CD12345",
+    "categorie": "C",
+    "dateValiditePermis": "2025-12-31",
     "actif": true
   },
   {
@@ -27,9 +27,9 @@
     "prenom": "Paul",
     "email": "paul.bernard@fleet.local",
     "telephone": "0678901234",
-    "numeroPemis": "45EF67890",
-    "categoriePemis": "B",
-    "dateExpirationPemis": "2024-03-15",
+    "numeroPermis": "45EF67890",
+    "categorie": "B",
+    "dateValiditePermis": "2024-03-15",
     "actif": false
   }
 ]
