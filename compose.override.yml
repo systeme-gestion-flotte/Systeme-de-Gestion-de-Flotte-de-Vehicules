@@ -13,7 +13,7 @@ services:
     image: prom/prometheus:v2.51.0
     container_name: flotte-prometheus
     volumes:
-      - ./infrastructure/docker-observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -24,7 +24,7 @@ services:
     container_name: flotte-loki
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
-      - ./infrastructure/docker-observability/loki.yaml:/etc/loki/local-config.yaml
+      - ./infra/docker/loki.yaml:/etc/loki/local-config.yaml
     ports:
       - "3100:3100"
     restart: unless-stopped
@@ -36,8 +36,8 @@ services:
     ports:
       - "3101:3000"
     volumes:
-      - ./infrastructure/docker-observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-      - ./infra/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infra/docker/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./infra/observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
@@ -52,7 +52,7 @@ services:
     container_name: flotte-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
-      - ./infrastructure/docker-observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./infra/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - "4317:4317" # OTLP gRPC (le port sur lequel Spring Boot enverra les données)
       - "4318:4318" # OTLP HTTP

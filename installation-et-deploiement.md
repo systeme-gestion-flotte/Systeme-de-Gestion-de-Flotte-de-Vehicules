@@ -32,8 +32,8 @@ docker compose up -d --build
 
 ### Étape 3 : Initialisation et Seeding
 Lors du démarrage :
-1. Les bases de données PostgreSQL et TimescaleDB sont initialisées via `config/init-databases.sql`.
-2. Le conteneur **Keycloak** importe sa configuration initiale (`Keycloak/realm-export.json`).
+1. Les bases de données PostgreSQL et TimescaleDB sont initialisées via `database/init-databases.sql`.
+2. Le conteneur **Keycloak** importe sa configuration initiale (`auth/realm-export.json`).
 3. Le conteneur **db-seeder** peuple automatiquement les tables (`vehicules`, `conducteurs`, etc.) avec des jeux de données fictifs pour pouvoir tester l'application directement.
 
 ## 3. Accès aux Services et Interfaces

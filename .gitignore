@@ -19,3 +19,7 @@ coverage/
 
 # Fichiers de configuration sensibles
 infrastructure/kubernetes/secrets.yaml
+infra/kubernetes/secrets.yaml
+
+# Helm archives
+*.tgz

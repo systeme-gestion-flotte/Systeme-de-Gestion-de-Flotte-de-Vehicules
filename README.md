@@ -45,10 +45,10 @@ docker compose up -d --build
 
 ## 3. Déploiement Kubernetes
 
-Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le dossier `infrastructure/kubernetes`.
+Toutes les ressources Kubernetes (Manifests, Helm, Ingress) se trouvent dans le dossier `infra/kubernetes`.
 
-👉 **[Voir le guide de déploiement Kubernetes](infrastructure/kubernetes/readme.md)**
-👉 **[Voir le guide d'authentification Keycloak](infrastructure/keycloak/readme.md)**
+👉 **[Voir le guide de déploiement Kubernetes](infra/kubernetes/readme.md)**
+👉 **[Voir le guide d'authentification Keycloak](auth/readme.md)**
 
 ---
 
