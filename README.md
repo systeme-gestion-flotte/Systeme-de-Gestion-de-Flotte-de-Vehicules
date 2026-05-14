@@ -106,7 +106,7 @@ cd services/localisation-service && npm test
 
 Le projet est conçu avec une infrastructure conteneurisée prête à l'emploi. Vous pouvez le déployer localement pour le développement (Docker Compose) ou l'orchestrer pour la production via Kubernetes (Helm).
 
-👉 **[Voir le guide complet d'installation et de déploiement (INSTALL.md)](INSTALL.md)**
+👉 **[Voir le guide complet d'installation et de déploiement (INSTALL.md)](installation-et-deploiement.md)**
 
 Ce guide détaille pas-à-pas les commandes de lancement (dont le *seeding* automatique des bases), les ports d'accès de toutes les applications de la stack, et les comptes préconfigurés (Keycloak) pour tester l'interface.
 
