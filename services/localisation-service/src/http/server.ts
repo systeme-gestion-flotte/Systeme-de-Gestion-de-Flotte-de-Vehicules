@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import { getHistorique, getLastPosition, savePosition, getLatestAllPositions } from '../database/timescale';
 import { checkAuth, checkRole } from './auth';
 import { ZONES, Zone } from '../geofencing/zones';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
+import * as http from 'http';
 
 const app = express();
 app.use(express.json());
@@ -103,7 +104,7 @@ app.post(['/api/positions', '/positions'], async (req: Request, res: Response) =
       horodatage: horodatage || new Date().toISOString()
     };
     await savePosition(position);
-    res.status(201).json({ ...position, id_position: randomUUID() });
+    res.status(201).json({ ...position, id_position: uuidv4() });
   } catch (err: any) {
     console.error('Erreur création position:', err.message);
     res.status(500).json({ error: 'Erreur interne du serveur' });
@@ -119,7 +120,7 @@ app.post(['/api/zones', '/zones'], checkRole(['admin', 'manager']), (req: Reques
   }
 
   const newZone: any = {
-    id_zone: randomUUID(),
+    id_zone: uuidv4(),
     nom: nom,
     type,
     latitude_centre,
@@ -128,12 +129,12 @@ app.post(['/api/zones', '/zones'], checkRole(['admin', 'manager']), (req: Reques
   };
 
   ZONES.push({
-    id: newZone.id_zone,
-    name: newZone.nom,
-    type: newZone.type,
-    lat: latitude_centre,
-    lng: longitude_centre,
-    radiusMeter: rayon_metres
+    id: String(newZone.id_zone),
+    name: String(newZone.nom),
+    type: newZone.type as any,
+    lat: Number(latitude_centre),
+    lng: Number(longitude_centre),
+    radiusMeter: Number(rayon_metres)
   });
   
   res.status(201).json(newZone);
@@ -154,9 +155,9 @@ app.put(['/api/zones/:id', '/zones/:id'], checkRole(['admin', 'manager', 'techni
     type: type || ZONES[index].type,
   };
 
-  if (latitude_centre !== undefined) updatedZone.lat = latitude_centre;
-  if (longitude_centre !== undefined) updatedZone.lng = longitude_centre;
-  if (rayon_metres !== undefined) updatedZone.radiusMeter = rayon_metres;
+  if (latitude_centre !== undefined) updatedZone.lat = Number(latitude_centre);
+  if (longitude_centre !== undefined) updatedZone.lng = Number(longitude_centre);
+  if (rayon_metres !== undefined) updatedZone.radiusMeter = Number(rayon_metres);
 
   ZONES[index] = updatedZone;
   res.json(updatedZone);
@@ -174,7 +175,7 @@ app.delete(['/api/zones/:id', '/zones/:id'], checkRole(['admin']), (req: Request
   res.status(200).json({ success: true, message: `Zone ${id} supprimée` });
 });
 
-import http from 'http';
+
 
 export function startHttpServer(port: number): http.Server {
   const server = http.createServer(app);

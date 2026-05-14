@@ -4,6 +4,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "target": "es2017",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true
   }
 }
