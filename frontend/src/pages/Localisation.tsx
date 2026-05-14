@@ -95,11 +95,12 @@ export default function Localisation() {
 
   // Charger les dernières positions via REST
   const fetchLatest = useCallback(() => {
-    api.get<any[]>('/localisation/positions/latest')
-      .then(({ data }) => {
-        let mapped = data.map(p => ({
+    api.get<any>('/localisation/positions/latest')
+      .then((resp) => {
+        const data = Array.isArray(resp.data) ? resp.data : (resp.data.data || []);
+        let mapped = data.map((p: any) => ({
           vehiculeId: p.vehicule_id,
-          immatriculation: p.immatriculation || p.vehicule_id, // use joined immat if available
+          immatriculation: p.immatriculation || p.vehicule_id,
           statut: 'EN_COURSE',
           latitude: p.latitude,
           longitude: p.longitude,
@@ -107,14 +108,13 @@ export default function Localisation() {
           timestamp: p.horodatage
         }));
 
-        // SIMULATION: Un conducteur ne voit que la position de son propre véhicule
-        if (keycloak.hasRealmRole('utilisateur') && mapped.length > 0) {
+        if (keycloak.hasRealmRole('conducteur') && mapped.length > 0) {
           mapped = [mapped[0]];
         }
 
         setPositions(mapped);
       })
-      .catch(() => {}); // silently ignore if endpoint not ready
+      .catch((err) => console.error('Fetch latest positions error:', err));
   }, []);
 
   useEffect(() => { fetchLatest(); }, [fetchLatest]);
@@ -142,7 +142,7 @@ export default function Localisation() {
       };
       setPositions(prev => {
         // Filtrage conducteur pour les événements Websocket
-        if (keycloak.hasRealmRole('utilisateur')) {
+        if (keycloak.hasRealmRole('conducteur')) {
           if (prev.length > 0 && prev[0].vehiculeId !== mapped.vehiculeId) {
             return prev;
           }
