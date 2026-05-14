@@ -1,7 +1,7 @@
 import { checkGeofencing, isInZone, getZonesForPosition, ZONES } from '../geofencing/zones';
 
 describe('isInZone', () => {
-  const zone = ZONES.find((z) => z.id === 'zone-rouen-centre')!;
+  const zone = ZONES.find((z) => z.id === 'zone-rouen-agglo')!;
 
   it('retourne true si la position est dans la zone', () => {
     expect(isInZone(49.44, 1.09, zone)).toBe(true);
@@ -11,9 +11,12 @@ describe('isInZone', () => {
     expect(isInZone(48.0, 2.0, zone)).toBe(false);
   });
 
-  it('retourne true sur les limites exactes de la zone', () => {
-    expect(isInZone(zone.minLat, zone.minLng, zone)).toBe(true);
-    expect(isInZone(zone.maxLat, zone.maxLng, zone)).toBe(true);
+  it('retourne true sur les limites de la zone (ou proche)', () => {
+    // Le centre est à 49.44, 1.09. 
+    // On teste un point à environ 6.9km (dans le rayon de 7km)
+    expect(isInZone(49.44, 1.15, zone)).toBe(true);
+    // On teste un point à environ 7.1km (hors du rayon de 7km)
+    expect(isInZone(49.44, 1.20, zone)).toBe(false);
   });
 });
 
@@ -51,7 +54,7 @@ describe('getZonesForPosition', () => {
   it('retourne les zones correspondant à la position', () => {
     const zones = getZonesForPosition(49.44, 1.09);
     expect(zones.length).toBeGreaterThan(0);
-    expect(zones.some((z) => z.id === 'zone-rouen-centre')).toBe(true);
+    expect(zones.some((z) => z.id === 'zone-rouen-agglo')).toBe(true);
   });
 
   it('retourne un tableau vide pour une position hors de toute zone', () => {

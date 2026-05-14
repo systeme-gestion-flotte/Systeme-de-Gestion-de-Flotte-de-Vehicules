@@ -131,10 +131,9 @@ app.post(['/api/zones', '/zones'], checkRole(['admin', 'manager']), (req: Reques
     id: newZone.id_zone,
     name: newZone.nom,
     type: newZone.type,
-    minLat: latitude_centre - (rayon_metres / 111000),
-    maxLat: latitude_centre + (rayon_metres / 111000),
-    minLng: longitude_centre - (rayon_metres / 111000),
-    maxLng: longitude_centre + (rayon_metres / 111000),
+    lat: latitude_centre,
+    lng: longitude_centre,
+    radiusMeter: rayon_metres
   });
   
   res.status(201).json(newZone);
@@ -155,12 +154,9 @@ app.put(['/api/zones/:id', '/zones/:id'], checkRole(['admin', 'manager', 'techni
     type: type || ZONES[index].type,
   };
 
-  if (latitude_centre !== undefined && longitude_centre !== undefined && rayon_metres !== undefined) {
-    updatedZone.minLat = latitude_centre - (rayon_metres / 111000);
-    updatedZone.maxLat = latitude_centre + (rayon_metres / 111000);
-    updatedZone.minLng = longitude_centre - (rayon_metres / 111000);
-    updatedZone.maxLng = longitude_centre + (rayon_metres / 111000);
-  }
+  if (latitude_centre !== undefined) updatedZone.lat = latitude_centre;
+  if (longitude_centre !== undefined) updatedZone.lng = longitude_centre;
+  if (rayon_metres !== undefined) updatedZone.radiusMeter = rayon_metres;
 
   ZONES[index] = updatedZone;
   res.json(updatedZone);

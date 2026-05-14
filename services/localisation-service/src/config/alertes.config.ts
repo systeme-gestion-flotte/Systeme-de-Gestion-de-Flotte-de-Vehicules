@@ -1,0 +1,5 @@
+export const SEUILS = {
+  IMMOBILE_MINUTES:     30,
+  VITESSE_MAX_KMH:      130,
+  SIGNAL_PERDU_MINUTES: 5,
+};

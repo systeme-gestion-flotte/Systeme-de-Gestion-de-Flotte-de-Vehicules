@@ -48,10 +48,32 @@ interface VehiculePosition {
   timestamp: string;
 }
 
-// Geofencing zones (example)
+// Geofencing zones matching the backend (Circles)
 const ZONES = [
-  { lat: 49.4431, lng: 1.0993, radius: 2000, label: 'Dépôt principal', color: '#6366f1' },
-  { lat: 49.4000, lng: 1.0700, radius: 1500, label: 'Zone industrielle', color: '#f59e0b' },
+  { 
+    lat: 49.44, 
+    lng: 1.09, 
+    radius: 7000, 
+    label: 'Agglomération de Rouen', 
+    color: '#3b82f6', 
+    type: 'AUTORISEE' 
+  },
+  { 
+    lat: 49.42, 
+    lng: 1.09, 
+    radius: 800, 
+    label: 'Zone Industrielle Interdite', 
+    color: '#ef4444', 
+    type: 'INTERDITE' 
+  },
+  { 
+    lat: 49.43, 
+    lng: 1.05, 
+    radius: 1000, 
+    label: 'Port de Rouen — Zone Restreinte', 
+    color: '#ef4444', 
+    type: 'INTERDITE' 
+  },
 ];
 
 // Component to auto-fit map bounds
@@ -173,13 +195,19 @@ export default function Localisation() {
               attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
             />
 
-            {/* Zones géographiques */}
+            {/* Zones géographiques (Cercles) */}
             {ZONES.map((z, i) => (
               <Circle
                 key={i}
                 center={[z.lat, z.lng]}
                 radius={z.radius}
-                pathOptions={{ color: z.color, fillColor: z.color, fillOpacity: 0.1, weight: 2 }}
+                pathOptions={{ 
+                  color: z.color, 
+                  fillColor: z.color, 
+                  fillOpacity: z.type === 'AUTORISEE' ? 0.05 : 0.2, 
+                  weight: 2,
+                  dashArray: z.type === 'AUTORISEE' ? '5, 10' : ''
+                }}
               >
                 <Popup>{z.label}</Popup>
               </Circle>

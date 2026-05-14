@@ -7,6 +7,11 @@ class AlerteBase(BaseModel):
     source: str
     message: str
     time: str
+    role_cible: Optional[str] = None
+    user_id_cible: Optional[str] = None
+    is_read: Optional[bool] = False
+    source_topic: Optional[str] = None
+    severite: Optional[str] = "info" # info, attention, critique
 
 class AlerteCreate(AlerteBase):
     pass

@@ -51,7 +51,8 @@ def create_intervention(db: Session, dto: schemas.CreateInterventionDto):
         type=dto.type,
         date_planifiee=dto.date_planifiee,
         statut="planifiee",
-        description=dto.description
+        description=dto.description,
+        cout=dto.cout
     )
     db.add(db_item)
     db.commit()
@@ -80,6 +81,8 @@ def update_intervention(db: Session, id: str, dto: schemas.UpdateInterventionDto
         db_item.technicien_id = dto.technicien_id
     if dto.description is not None:
         db_item.description = dto.description
+    if dto.cout is not None:
+        db_item.cout = dto.cout
         
     db.commit()
     db.refresh(db_item)

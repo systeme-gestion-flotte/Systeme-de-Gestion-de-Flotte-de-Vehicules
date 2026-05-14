@@ -13,7 +13,7 @@ export interface GeofencingAlertEvent {
   timestamp: string;
 }
 
-let producer: Producer;
+export let producer: Producer;
 let connected = false;
 
 export async function initKafkaProducer(): Promise<void> {

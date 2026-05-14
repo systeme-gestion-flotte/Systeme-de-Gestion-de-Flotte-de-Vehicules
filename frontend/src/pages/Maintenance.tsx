@@ -145,7 +145,8 @@ export default function Maintenance() {
       technicien_id: form.technicienId || 'tech-001',
       type: form.typeIntervention,
       date_planifiee: new Date(form.dateDebut).toISOString(),
-      description: form.description
+      description: form.description,
+      cout: Number(form.cout)
     };
 
     try {
@@ -166,7 +167,8 @@ export default function Maintenance() {
     const payload = {
       date_planifiee: new Date(form.dateDebut).toISOString(),
       technicien_id: form.technicienId,
-      description: form.description
+      description: form.description,
+      cout: Number(form.cout)
     };
 
     try {
@@ -294,12 +296,22 @@ export default function Maintenance() {
         <form onSubmit={editTarget ? handleUpdate : handleCreate} className="intervention-form" data-testid="create-intervention-form">
           <div className="form-group">
             <label>Véhicule</label>
-            <select name="vehiculeId" value={form.vehiculeId} onChange={handleChange} required className="form-select" data-testid="input-vehicule-id">
-              <option value="">Sélectionnez un véhicule</option>
-              {vehicules.map(v => (
-                <option key={v.id} value={v.id}>{v.immatriculation}</option>
-              ))}
-            </select>
+            {editTarget ? (
+              <input 
+                type="text" 
+                value={editTarget.immatriculation || 'Véhicule inconnu'} 
+                disabled 
+                className="form-input disabled" 
+                style={{ background: 'rgba(255,255,255,0.05)', cursor: 'not-allowed' }}
+              />
+            ) : (
+              <select name="vehiculeId" value={form.vehiculeId} onChange={handleChange} required className="form-select" data-testid="input-vehicule-id">
+                <option value="">Sélectionnez un véhicule</option>
+                {vehicules.map(v => (
+                  <option key={v.id} value={v.id}>{v.immatriculation}</option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="form-row">
             <div className="form-group">

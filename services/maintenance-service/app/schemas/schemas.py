@@ -9,11 +9,13 @@ class CreateInterventionDto(BaseModel):
     type: str # revision, reparation, controle_technique
     date_planifiee: datetime
     description: Optional[str] = None
+    cout: Optional[float] = 0.0
 
 class UpdateInterventionDto(BaseModel):
     date_planifiee: Optional[datetime] = None
     technicien_id: Optional[str] = None
     description: Optional[str] = None
+    cout: Optional[float] = None
 
 class TerminerInterventionDto(BaseModel):
     date_realisation: datetime

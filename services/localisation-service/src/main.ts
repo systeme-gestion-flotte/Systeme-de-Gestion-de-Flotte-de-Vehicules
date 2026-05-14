@@ -4,13 +4,18 @@ import * as path from 'path';
 
 import { initTelemetry, getTracer, shutdownTelemetry } from './telemetry/tracing';
 import { initDatabase, savePosition, getHistorique } from './database/timescale';
-import { initKafkaProducer, publishGeofencingAlert, disconnectKafkaProducer } from './kafka/producer';
-import { checkGeofencing } from './geofencing/zones';
+import { initKafkaProducer, disconnectKafkaProducer } from './kafka/producer';
+import { checkGeofencing, getZonesForPosition, publierAlertGeofence } from './geofencing/zones';
 import { startHttpServer } from './http/server';
 import { startSimulator } from './simulator/gps-simulator';
 import { Server } from 'socket.io';
+import { rafraichirCache, getVehiculeInfo } from './cache/vehicule-cache';
 
 let io: Server;
+
+// Suivi d'état pour éviter le spam d'alertes geofencing
+// Clé: vehicule_id, Valeur: nom de la dernière zone d'infraction (ou null si OK)
+const lastGeofenceInfraction = new Map<string, string | null>();
 
 // Initialisation OpenTelemetry en premier (avant tout import instrumenté)
 initTelemetry();
@@ -51,23 +56,28 @@ server.addService(localisationProto.LocalisationService.service, {
           horodatage: position.horodatage,
         });
 
-        // 2. Vérification géofencing
-        const geofencing = checkGeofencing(position.latitude, position.longitude);
-        if (geofencing.violated && geofencing.zone) {
-          await publishGeofencingAlert({
-            vehiculeId: position.vehicule_id,
-            latitude: position.latitude,
-            longitude: position.longitude,
-            zoneId: geofencing.zone.id,
-            zoneName: geofencing.zone.name,
-            type: 'ENTREE',
-            timestamp: position.horodatage || new Date().toISOString(),
-          });
+        // 2. Vérification géofencing avec anti-spam
+        const zones = getZonesForPosition(position.latitude, position.longitude);
+        const inAutorisee = zones.some(z => z.type === 'AUTORISEE');
+        const inInterdite = zones.find(z => z.type === 'INTERDITE');
+        
+        const vehiculeId = position.vehicule_id;
+        const currentInfraction = inInterdite ? inInterdite.name : (!inAutorisee ? 'Zone Autorisée' : null);
+        const lastInfraction = lastGeofenceInfraction.get(vehiculeId);
 
-          call.write({
-            success: true,
-            message: `ALERTE GEOFENCING: zone interdite "${geofencing.zone.name}"`,
-          });
+        if (currentInfraction && currentInfraction !== lastInfraction) {
+          // Nouvelle infraction ou changement de zone d'infraction
+          const info = getVehiculeInfo(1); // TODO: mapper le bon ID
+          const type = inInterdite ? 'entree_zone_interdite' : 'sortie_zone_autorisee';
+          
+          await publierAlertGeofence(1, info.immatriculation, info.conducteur_id || "inconnu", currentInfraction, type);
+          
+          lastGeofenceInfraction.set(vehiculeId, currentInfraction);
+          call.write({ success: true, message: `ALERTE GEOFENCING: ${currentInfraction}` });
+        } else if (!currentInfraction && lastInfraction) {
+          // Retour à la normale
+          lastGeofenceInfraction.set(vehiculeId, null);
+          call.write({ success: true, message: 'Retour en zone autorisée' });
         } else {
           call.write({ success: true, message: 'Position enregistrée' });
         }
@@ -138,6 +148,10 @@ async function main(): Promise<void> {
     // Kafka producer (non bloquant si Kafka indisponible)
     await initKafkaProducer();
 
+    // Cache véhicules et rafraîchissement
+    await rafraichirCache();
+    setInterval(rafraichirCache, 5 * 60 * 1000);
+
     // Serveur gRPC (port 50051)
     const grpcPort = `0.0.0.0:${process.env.GRPC_PORT || 50051}`;
     server.bindAsync(grpcPort, grpc.ServerCredentials.createInsecure(), (error, portNumber) => {
@@ -172,17 +186,24 @@ async function main(): Promise<void> {
           io.emit('position_update', position);
         }
 
-        const geofencing = checkGeofencing(position.latitude, position.longitude);
-        if (geofencing.violated && geofencing.zone) {
-          await publishGeofencingAlert({
-            vehiculeId: position.vehicule_id,
-            latitude: position.latitude,
-            longitude: position.longitude,
-            zoneId: geofencing.zone.id,
-            zoneName: geofencing.zone.name,
-            type: 'ENTREE',
-            timestamp: position.horodatage,
-          });
+        const zones = getZonesForPosition(position.latitude, position.longitude);
+        const inAutorisee = zones.some(z => z.type === 'AUTORISEE');
+        const inInterdite = zones.find(z => z.type === 'INTERDITE');
+        
+        const vehiculeId = position.vehicule_id;
+        const currentInfraction = inInterdite ? inInterdite.name : (!inAutorisee ? 'Zone Autorisée' : null);
+        const lastInfraction = lastGeofenceInfraction.get(vehiculeId);
+
+        if (currentInfraction && currentInfraction !== lastInfraction) {
+          const VEHICULE_IDS = ['550e8400-e29b-41d4-a716-446655440000', 'VEH-001', 'VEH-002', 'VEH-003', 'VEH-004', 'VEH-005'];
+          const numericId = VEHICULE_IDS.indexOf(vehiculeId) + 1;
+          const info = getVehiculeInfo(numericId > 0 ? numericId : 1);
+          const type = inInterdite ? 'entree_zone_interdite' : 'sortie_zone_autorisee';
+          
+          await publierAlertGeofence(numericId, info.immatriculation, info.conducteur_id || "inconnu", currentInfraction, type);
+          lastGeofenceInfraction.set(vehiculeId, currentInfraction);
+        } else if (!currentInfraction && lastInfraction) {
+          lastGeofenceInfraction.set(vehiculeId, null);
         }
       });
     }
