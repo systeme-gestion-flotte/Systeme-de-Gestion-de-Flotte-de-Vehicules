@@ -306,6 +306,15 @@ services:
     networks:
       - fleet-network
 
+  loki:
+    image: grafana/loki:latest
+    container_name: fleet-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - fleet-network
+
   grafana:
     image: grafana/grafana:latest
     container_name: fleet-grafana

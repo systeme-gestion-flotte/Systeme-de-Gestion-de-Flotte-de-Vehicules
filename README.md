@@ -41,6 +41,13 @@ docker compose up -d --build
 | **Jaeger** | 16686 | [UI Tracing](http://localhost:16686) | - |
 | **Kafka UI** | **8085** | [Kafka UI](http://localhost:8085) | Gestion visuelle des topics/messages |
 | **Prometheus** | 9090 | [Dashboard](http://localhost:9090) | - |
+
+> **Note sur la consultation des Logs (Loki) :**
+> Les logs centralisés par Loki n'ont pas d'interface dédiée. Pour les consulter :
+> 1. Ouvrez [Grafana](http://localhost:3101) (admin/admin).
+> 2. Allez dans l'onglet **Explore** (icône boussole).
+> 3. Sélectionnez **Loki** comme source de données.
+> 4. Interrogez vos logs à l'aide de requêtes **LogQL**.
 ---
 
 ## 3. Déploiement Kubernetes
