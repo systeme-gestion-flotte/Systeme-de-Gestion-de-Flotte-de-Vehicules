@@ -40,7 +40,7 @@ docker compose up -d --build
 | **Grafana** | 3101 | [Dashboard](http://localhost:3101) | admin / admin |
 | **Jaeger** | 16686 | [UI Tracing](http://localhost:16686) | - |
 | **Kafka UI** | **8085** | [Kafka UI](http://localhost:8085) | Gestion visuelle des topics/messages |
-
+| **Prometheus** | 9090 | [Dashboard](http://localhost:9090) | - |
 ---
 
 ## 3. Déploiement Kubernetes
